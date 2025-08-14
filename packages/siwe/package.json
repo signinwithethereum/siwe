@@ -1,6 +1,6 @@
 {
   "name": "sign-in-with-ethereum",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Sign In with Ethereum",
   "main": "dist/siwe.js",
   "types": "dist/siwe.d.ts",
@@ -23,8 +23,8 @@
   ],
   "homepage": "https://github.com/signinwithethereum/siwe",
   "dependencies": {
-    "sign-in-with-ethereum-parser": "^3.0.0",
-    "@stablelib/random": "^1.0.1"
+    "@stablelib/random": "^1.0.1",
+    "sign-in-with-ethereum-parser": "^3.0.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.23.0",
