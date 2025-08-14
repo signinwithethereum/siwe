@@ -1,11 +1,12 @@
-# Sign-In with Ethereum Brand Assets
-The Sign-In with Ethereum brand assets include the logo, logomark, and icons associated with the project. 
+# Sign In with Ethereum Brand Assets
 
-All of the assets in this directory are being released under a CC0 1.0 license (see: [license.md](License.md) in this directory) for the public to use and incorporate them where they wish to. 
+The Sign In with Ethereum brand assets include the logo, logomark, and icons associated with the project.
 
-## Sign-In with Ethereum Buttons
+All of the assets in this directory are being released under a CC0 1.0 license (see: [license.md](License.md) in this directory) for the public to use and incorporate them where they wish to.
 
-For those incorporating Sign-In with Ethereum into their project and require a button for users, we have included two as part of this asset set, covering both a light and dark background:
+## Sign In with Ethereum Buttons
+
+For those incorporating Sign In with Ethereum into their project and require a button for users, we have included two as part of this asset set, covering both a light and dark background:
 
 <img width="200px" src="SIWE_Button_Light_BG.png">
 <img width="200px" src="SIWE_Button_Dark_BG.png">
