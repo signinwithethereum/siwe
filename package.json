@@ -2,8 +2,8 @@
 	"name": "sign-in-with-ethereum-root",
 	"private": true,
 	"workspaces": [
-		"packages/sign-in-with-ethereum-parser",
-		"packages/sign-in-with-ethereum"
+		"packages/siwe-parser",
+		"packages/siwe"
 	],
 	"scripts": {
 		"build": "lerna run build",

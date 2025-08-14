@@ -1,5 +1,8 @@
 // TODO: Figure out how to get types from this lib:
-import { ParsedMessage, parseIntegerNumber } from '@spruceid/siwe-parser'
+import {
+	ParsedMessage,
+	parseIntegerNumber,
+} from '@signinwithethereum/sign-in-with-ethereum-parser'
 
 import { Provider, verifyMessage } from './ethersCompat'
 import {
