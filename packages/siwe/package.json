@@ -1,6 +1,6 @@
 {
 	"name": "sign-in-with-ethereum",
-	"version": "3.0.0",
+	"version": "2.0.0",
 	"description": "Sign In with Ethereum",
 	"main": "dist/siwe.js",
 	"types": "dist/siwe.d.ts",
