@@ -28,6 +28,13 @@ import {
 import { SiweMessage } from './client'
 import { SiweErrorType } from './types'
 
+const verificationNegativeEntries = Object.entries(verificationNegative)
+const constructorInvalidVerificationCases = new Set([
+	'invalid issuedAt',
+	'invalid notBefore',
+	'invalid expirationTime',
+])
+
 describe(`Message Generation`, () => {
 	test.each(Object.entries(parsingPositive))(
 		'Generates message successfully: %s',
@@ -45,10 +52,8 @@ describe(`Message Generation`, () => {
 	)
 
 	// The object constructor accepts Partial<SiweMessage> and auto-fills
-	// nonce/issuedAt via toMessage(). Missing domain is also tolerated.
-	// These fixtures are only negative for string parsing, not object construction.
+	// nonce/issuedAt via toMessage().
 	const objectConstructionValid = new Set([
-		'missing domain',
 		'missing nonce',
 		'missing issuedAt',
 	])
@@ -83,15 +88,14 @@ describe(`Message verification without suppressExceptions`, () => {
 		}
 	)
 
-	test.each(Object.entries(verificationNegative))(
+	test.each(
+		verificationNegativeEntries.filter(
+			([n]) => !constructorInvalidVerificationCases.has(n)
+		)
+	)(
 		'Fails to verify message: %s and rejects the promise',
 		async (n, test_fields: any) => {
-			let msg: SiweMessage
-			try {
-				msg = new SiweMessage(test_fields)
-			} catch {
-				return // constructor threw on invalid fields — valid failure
-			}
+			const msg = new SiweMessage(test_fields)
 			await expect(
 				msg.verify({
 					signature: test_fields.signature,
@@ -103,18 +107,28 @@ describe(`Message verification without suppressExceptions`, () => {
 			).rejects.toMatchObject({ success: false })
 		}
 	)
+
+	test.each(
+		verificationNegativeEntries.filter(([n]) =>
+			constructorInvalidVerificationCases.has(n)
+		)
+	)(
+		'Rejects invalid message fixture before verification: %s',
+		(n, test_fields: any) => {
+			expect(() => new SiweMessage(test_fields)).toThrow()
+		}
+	)
 })
 
 describe(`Message verification with suppressExceptions`, () => {
-	test.each(Object.entries(verificationNegative))(
+	test.each(
+		verificationNegativeEntries.filter(
+			([n]) => !constructorInvalidVerificationCases.has(n)
+		)
+	)(
 		'Fails to verify message: %s but still resolves the promise',
 		async (n, test_fields: any) => {
-			let msg: SiweMessage
-			try {
-				msg = new SiweMessage(test_fields)
-			} catch {
-				return
-			}
+			const msg = new SiweMessage(test_fields)
 			const result = await msg.verify(
 				{
 					signature: test_fields.signature,
@@ -126,6 +140,17 @@ describe(`Message verification with suppressExceptions`, () => {
 				{ suppressExceptions: true }
 			)
 			expect(result.success).toBe(false)
+		}
+	)
+
+	test.each(
+		verificationNegativeEntries.filter(([n]) =>
+			constructorInvalidVerificationCases.has(n)
+		)
+	)(
+		'Constructor still rejects invalid message fixture with suppressExceptions: %s',
+		(n, test_fields: any) => {
+			expect(() => new SiweMessage(test_fields)).toThrow()
 		}
 	)
 })

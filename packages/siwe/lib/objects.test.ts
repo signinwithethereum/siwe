@@ -10,7 +10,7 @@ describe('Message Generation', () => {
 		if (test.error === 'none') {
 			expect(new SiweMessage(test.msg)).toBeDefined()
 		} else {
-			expect(() => new SiweMessage(test.msg)).toThrow()
+			expect(() => new SiweMessage(test.msg)).toThrow(test.error)
 		}
 	})
 })
