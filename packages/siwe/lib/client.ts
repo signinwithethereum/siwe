@@ -4,7 +4,9 @@ import {
   parseIntegerNumber,
 } from "@signinwithethereum/ts-parser";
 
-import { Provider, verifyMessage } from "./ethersCompat";
+import type { SiweConfig } from "./config";
+import { getGlobalConfig } from "./config";
+import { tryAutoDetectEthers } from "./ethersCompat";
 import {
   SiweError,
   SiweErrorType,
@@ -19,6 +21,47 @@ import {
   generateNonce,
   checkInvalidKeys,
 } from "./utils";
+
+/**
+ * Resolve the SiweConfig to use for verification.
+ * Priority: opts.config > global config > auto-detect ethers (with opts.provider for backward compat).
+ */
+function resolveConfig(opts: VerifyOpts): SiweConfig {
+  if (opts.config) {
+    return opts.config;
+  }
+
+  const global = getGlobalConfig();
+  if (global) {
+    // If a legacy provider was passed alongside global config, create an ethers
+    // config with that provider for EIP-1271 support
+    if (opts.provider && !global.checkContractWalletSignature) {
+      const ethersConfig = tryAutoDetectEthers(opts.provider);
+      if (ethersConfig) {
+        return {
+          ...global,
+          checkContractWalletSignature:
+            ethersConfig.checkContractWalletSignature,
+        };
+      }
+    }
+    return global;
+  }
+
+  // Backward compat: auto-detect ethers
+  const ethersConfig = tryAutoDetectEthers(opts.provider);
+  if (ethersConfig) {
+    return ethersConfig;
+  }
+
+  throw new Error(
+    "No verification config found. Either:\n" +
+      "  - Call configure() with a SiweConfig\n" +
+      "  - Pass { config } in VerifyOpts\n" +
+      "  - Install ethers (npm install ethers) for automatic detection\n" +
+      "  - Install viem and use createViemConfig()"
+  );
+}
 
 export class SiweMessage {
   /**RFC 3986 URI scheme for the authority that is requesting the signing. */
@@ -196,7 +239,7 @@ export class SiweMessage {
     params: VerifyParams,
     opts: VerifyOpts = { suppressExceptions: false }
   ): Promise<SiweResponse> {
-    return new Promise<SiweResponse>((resolve, reject) => {
+    return new Promise<SiweResponse>(async (resolve, reject) => {
       const fail = (result) => {
         if (opts.suppressExceptions) {
           return resolve(result);
@@ -230,6 +273,18 @@ export class SiweMessage {
           error: new Error(
             `${invalidOpts.join(", ")} is/are not valid key(s) for VerifyOpts.`
           ),
+        });
+      }
+
+      // Resolve verification config
+      let config: SiweConfig;
+      try {
+        config = resolveConfig(opts);
+      } catch (e) {
+        return fail({
+          success: false,
+          data: this,
+          error: e,
         });
       }
 
@@ -318,7 +373,7 @@ export class SiweMessage {
       /** Recover address from signature */
       let addr;
       try {
-        addr = verifyMessage(EIP4361Message, signature);
+        addr = await config.verifyMessage(EIP4361Message, signature);
       } catch (e) {
         console.error(e);
       }
@@ -332,7 +387,7 @@ export class SiweMessage {
         const EIP1271Promise = checkContractWalletSignature(
           this,
           signature,
-          opts.provider
+          config
         )
           .then((isValid) => {
             if (!isValid) {
