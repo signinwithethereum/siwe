@@ -24,7 +24,8 @@ export const checkContractWalletSignature = async (
   return config.checkContractWalletSignature(
     message.address,
     message.prepareMessage(),
-    signature
+    signature,
+    message.chainId
   );
 };
 

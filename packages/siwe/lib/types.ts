@@ -14,6 +14,15 @@ export interface VerifyParams {
   /** Randomized token used to prevent replay attacks, at least 8 alphanumeric characters. */
   nonce?: string;
 
+  /** RFC 3986 URI referring to the resource that is the subject of the signing. */
+  uri?: string;
+
+  /** EIP-155 Chain ID to which the session is bound. */
+  chainId?: number;
+
+  /** System-specific identifier referring to the sign-in request. */
+  requestId?: string;
+
   /**ISO 8601 datetime string of the current time. */
   time?: string;
 }
@@ -23,6 +32,9 @@ export const VerifyParamsKeys: (keyof VerifyParams)[] = [
   'scheme',
   'domain',
   'nonce',
+  'uri',
+  'chainId',
+  'requestId',
   'time',
 ];
 
@@ -116,6 +128,15 @@ export enum SiweErrorType {
   /** `nonce` don't match the nonce provided for verification. */
   NONCE_MISMATCH = 'Nonce does not match provided nonce for verification.',
 
+  /** `uri` does not match the URI provided for verification. */
+  URI_MISMATCH = 'URI does not match provided URI for verification.',
+
+  /** `chainId` does not match the chain ID provided for verification. */
+  CHAIN_ID_MISMATCH = 'Chain ID does not match provided chain ID for verification.',
+
+  /** `requestId` does not match the request ID provided for verification. */
+  REQUEST_ID_MISMATCH = 'Request ID does not match provided request ID for verification.',
+
   /** `address` does not conform to EIP-55 or is not a valid address. */
   INVALID_ADDRESS = 'Invalid address.',
 
@@ -130,6 +151,9 @@ export enum SiweErrorType {
 
   /** Signature doesn't match the address of the message. */
   INVALID_SIGNATURE = 'Signature does not match address of the message.',
+
+  /** EIP-1271 verification was attempted with a provider/client on the wrong chain. */
+  INVALID_SIGNATURE_CHAIN_ID = 'Contract wallet verification provider chain does not match message chain ID.',
 
   /** `expirationTime`, `notBefore` or `issuedAt` not compliant to ISO-8601. */
   INVALID_TIME_FORMAT = 'Invalid time format.',

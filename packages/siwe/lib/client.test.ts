@@ -51,17 +51,7 @@ describe(`Message Generation`, () => {
 		}
 	)
 
-	// The object constructor accepts Partial<SiweMessage> and auto-fills
-	// nonce/issuedAt via toMessage().
-	const objectConstructionValid = new Set([
-		'missing nonce',
-		'missing issuedAt',
-	])
-	test.each(
-		Object.entries(parsingNegativeObjects).filter(
-			([n]) => !objectConstructionValid.has(n)
-		)
-	)(
+	test.each(Object.entries(parsingNegativeObjects))(
 		'Fails to generate message: %s',
 		(n, test) => {
 			expect(() => new SiweMessage(test as any)).toThrow()
@@ -337,6 +327,63 @@ describe('Error type specificity', () => {
 			expect.unreachable('should have rejected')
 		} catch (e: any) {
 			expect(e.error.type).toBe(SiweErrorType.DOMAIN_MISMATCH)
+		}
+	})
+
+	test('uri mismatch returns URI_MISMATCH', async () => {
+		const fields = (verificationPositive as any)['example message']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.issuedAt,
+				uri: 'https://example.com/not-the-same',
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.URI_MISMATCH)
+		}
+	})
+
+	test('chainId mismatch returns CHAIN_ID_MISMATCH', async () => {
+		const fields = (verificationPositive as any)['example message']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.issuedAt,
+				chainId: fields.chainId + 1,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.CHAIN_ID_MISMATCH)
+		}
+	})
+
+	test('requestId mismatch returns REQUEST_ID_MISMATCH', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Sign In with Ethereum Example Statement',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			requestId: 'expected-request-id',
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		try {
+			await msg.verify({
+				signature,
+				requestId: 'different-request-id',
+				time: msg.issuedAt,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.REQUEST_ID_MISMATCH)
 		}
 	})
 

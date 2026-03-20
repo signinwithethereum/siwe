@@ -17,7 +17,6 @@ import {
 } from "./types";
 import {
   checkContractWalletSignature,
-  generateNonce,
   checkInvalidKeys,
 } from "./utils";
 
@@ -145,7 +144,24 @@ export class SiweMessage {
       if (!this.domain) {
         throw new Error("domain is required");
       }
-      this.nonce = this.nonce || generateNonce();
+      if (!this.address) {
+        throw new Error("address is required");
+      }
+      if (!this.uri) {
+        throw new Error("uri is required");
+      }
+      if (!this.version) {
+        throw new Error("version is required");
+      }
+      if (this.chainId === undefined || this.chainId === null) {
+        throw new Error("chainId is required");
+      }
+      if (!this.nonce) {
+        throw new Error("nonce is required");
+      }
+      if (!this.issuedAt) {
+        throw new Error("issuedAt is required");
+      }
       /* the message object is valid or parsing its stringified value will throw */
       new ParsedMessage(this.prepareMessage());
     }
@@ -170,17 +186,11 @@ export class SiweMessage {
     let prefix = [header, this.address].join("\n");
     const versionField = `Version: ${this.version}`;
 
-    if (!this.nonce) {
-      this.nonce = generateNonce();
-    }
-
     const chainField = `Chain ID: ` + this.chainId || "1";
 
     const nonceField = `Nonce: ${this.nonce}`;
 
     const suffixArray = [uriField, versionField, chainField, nonceField];
-
-    this.issuedAt = this.issuedAt || new Date().toISOString();
 
     suffixArray.push(`Issued At: ${this.issuedAt}`);
 
@@ -287,7 +297,8 @@ export class SiweMessage {
       });
     }
 
-    const { signature, scheme, domain, nonce, time } = params;
+    const { signature, scheme, domain, nonce, uri, chainId, requestId, time } =
+      params;
 
     /** Scheme for domain binding */
     if (scheme && scheme !== this.scheme) {
@@ -321,6 +332,41 @@ export class SiweMessage {
         success: false,
         data: this,
         error: new SiweError(SiweErrorType.NONCE_MISMATCH, nonce, this.nonce),
+      });
+    }
+
+    /** URI binding */
+    if (uri && uri !== this.uri) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(SiweErrorType.URI_MISMATCH, uri, this.uri),
+      });
+    }
+
+    /** Chain binding */
+    if (chainId && chainId !== this.chainId) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(
+          SiweErrorType.CHAIN_ID_MISMATCH,
+          String(chainId),
+          String(this.chainId)
+        ),
+      });
+    }
+
+    /** Request ID binding */
+    if (requestId && requestId !== this.requestId) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(
+          SiweErrorType.REQUEST_ID_MISMATCH,
+          requestId,
+          this.requestId
+        ),
       });
     }
 
@@ -403,6 +449,22 @@ export class SiweMessage {
         return { success: true, data: this };
       })
       .catch((error): SiweResponse => {
+        if (
+          error instanceof Error &&
+          (error.message.includes("does not match message chainId") ||
+            error.message.includes("requires a provider with getNetwork()") ||
+            error.message.includes("requires a viem publicClient with chain.id"))
+        ) {
+          return {
+            success: false,
+            data: this,
+            error: new SiweError(
+              SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
+              String(this.chainId),
+              error.message
+            ),
+          };
+        }
         return { success: false, data: this, error };
       });
 
