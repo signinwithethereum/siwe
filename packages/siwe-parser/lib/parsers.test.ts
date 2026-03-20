@@ -1,4 +1,4 @@
-import { ParsedMessage } from "./abnf";
+import { ParsedMessage } from "./parsers";
 import * as fs from "fs";
 
 const parsingPositive: object = JSON.parse(

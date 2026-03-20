@@ -1,4 +1,4 @@
-import { ParsedMessage } from "./abnf";
+import { ParsedMessage } from "./parsers";
 import apgLib from "apg-js/src/apg-lib/node-exports";
 import { grammar } from "./siwe-grammar";
 import * as fs from "fs";

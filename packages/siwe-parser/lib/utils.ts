@@ -30,3 +30,18 @@ export const parseIntegerNumber = (number: string): number => {
   if (parsed === Infinity) throw new Error("Invalid number.");
   return parsed;
 };
+
+const ISO8601 =
+  /^(?<date>[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01]))[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(([Zz])|([+-]([01][0-9]|2[0-3]):[0-5][0-9]))$/;
+
+export const isValidISO8601Date = (inputDate: string): boolean => {
+  const inputMatch = ISO8601.exec(inputDate);
+
+  if (!inputMatch) {
+    return false;
+  }
+
+  const roundTripped = new Date(inputMatch.groups.date).toISOString().slice(0, 10);
+
+  return inputMatch.groups.date === roundTripped;
+};

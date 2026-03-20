@@ -4,9 +4,9 @@
   "description": "Sign In with Ethereum",
   "main": "dist/siwe.js",
   "types": "dist/siwe.d.ts",
-  "directories": {
-    "lib": "lib"
-  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "jest",
     "build": "tsc",
@@ -31,7 +31,10 @@
     "@typescript-eslint/parser": "^5.23.0",
     "eslint": "^8.15.0",
     "eslint-config-prettier": "^8.5.0",
-    "prettier": "^2.6.2"
+    "ethers5": "npm:ethers@^5.6.8",
+    "ethers6": "npm:ethers@^6.0.8",
+    "prettier": "^2.6.2",
+    "viem": "^2.0.0"
   },
   "peerDependencies": {
     "ethers": "^5.6.8 || ^6.0.8",
