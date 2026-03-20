@@ -30,7 +30,7 @@ import { SiweMessage } from './client'
 import { SiweErrorType } from './types'
 
 describe(`Message Generation`, () => {
-	test.concurrent.each(Object.entries(parsingPositive))(
+	test.each(Object.entries(parsingPositive))(
 		'Generates message successfully: %s',
 		(_, test: any) => {
 			const msg = new SiweMessage(test.fields)
@@ -38,7 +38,7 @@ describe(`Message Generation`, () => {
 		}
 	)
 
-	test.concurrent.each(Object.entries(parsingNegative))(
+	test.each(Object.entries(parsingNegative))(
 		'Fails to generate message: %s',
 		(n, test) => {
 			try {
@@ -50,7 +50,7 @@ describe(`Message Generation`, () => {
 		}
 	)
 
-	test.concurrent.each(Object.entries(parsingNegativeObjects))(
+	test.each(Object.entries(parsingNegativeObjects))(
 		'Fails to generate message: %s',
 		(n, test) => {
 			try {
@@ -64,7 +64,7 @@ describe(`Message Generation`, () => {
 })
 
 describe(`Message verification without suppressExceptions`, () => {
-	test.concurrent.each(Object.entries(verificationPositive))(
+	test.each(Object.entries(verificationPositive))(
 		'Verifies message successfully: %s',
 		async (_, test_fields: any) => {
 			const msg = new SiweMessage(test_fields)
@@ -84,7 +84,7 @@ describe(`Message verification without suppressExceptions`, () => {
 		}
 	)
 
-	test.concurrent.each(Object.entries(verificationNegative))(
+	test.each(Object.entries(verificationNegative))(
 		'Fails to verify message: %s and rejects the promise',
 		async (n, test_fields: any) => {
 			try {
@@ -110,7 +110,7 @@ describe(`Message verification without suppressExceptions`, () => {
 })
 
 describe(`Message verification with suppressExceptions`, () => {
-	test.concurrent.each(Object.entries(verificationNegative))(
+	test.each(Object.entries(verificationNegative))(
 		'Fails to verify message: %s but still resolves the promise',
 		async (n, test_fields: any) => {
 			try {
@@ -140,7 +140,7 @@ describe(`Message verification with suppressExceptions`, () => {
 
 describe(`Round Trip`, () => {
 	const wallet = Wallet.createRandom()
-	test.concurrent.each(Object.entries(parsingPositive))(
+	test.each(Object.entries(parsingPositive))(
 		'Generates a Successfully Verifying message: %s',
 		async (_, test: any) => {
 			const msg = new SiweMessage(test.fields)
@@ -155,7 +155,7 @@ describe(`Round Trip`, () => {
 
 describe(`Round Trip`, () => {
 	const wallet = Wallet.createRandom()
-	test.concurrent.each(Object.entries(parsingPositive))(
+	test.each(Object.entries(parsingPositive))(
 		'Generates a Successfully Verifying message: %s',
 		async (_, test: any) => {
 			const msg = new SiweMessage(test.fields)
@@ -175,7 +175,7 @@ describe(`EIP1271`, () => {
 			: new InfuraProvider(networkId)
 	}
 
-	test.concurrent.each(Object.entries(EIP1271))(
+	test.each(Object.entries(EIP1271))(
 		'Verifies message successfully: %s',
 		async (_, test_fields: any) => {
 			const provider = getProviderCompat(1)
