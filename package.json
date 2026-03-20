@@ -21,6 +21,6 @@
 		"ts-jest": "^29.0.5",
 		"typedoc": "^0.24.8",
 		"typedoc-plugin-extras": "^2.2.1",
-		"typescript": "^4.4.4"
+		"typescript": "^5.0.0"
 	}
 }
