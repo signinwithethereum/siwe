@@ -1,4 +1,4 @@
-![Sign In with Ethereum logo](https://login.xyz/favicon.png 'Sign In with Ethereum logo')
+![Sign In with Ethereum logo](./assets/logo.svg 'Sign In with Ethereum logo')
 
 Sign In with Ethereum describes how Ethereum accounts authenticate with
 off-chain services by signing a standard message format parameterized by scope,

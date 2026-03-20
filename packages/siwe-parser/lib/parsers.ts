@@ -18,7 +18,7 @@ export class ParsedMessage {
   expirationTime: string | undefined;
   notBefore: string | undefined;
   requestId: string | undefined;
-  resources: Array<string> | undefined;
+  resources: string[] | undefined;
   uriElements: {
     scheme: string;
     userinfo: string | undefined;
@@ -103,15 +103,12 @@ export class ParsedMessage {
     };
 
     const result = parser.parse(grammarObj, 0, msg, elements);
-    let throwMsg = "";
-    for (let i = 0; i < elements.errors.length; i += 1) {
-      throwMsg += elements.errors[i] + "\n";
-    }
+    const errors = [...elements.errors];
     if (!result.success) {
-      throwMsg += `Invalid message: ${JSON.stringify(result)}`;
+      errors.push(`Invalid message: ${JSON.stringify(result)}`);
     }
-    if (throwMsg !== "") {
-      throw new Error(throwMsg);
+    if (errors.length > 0) {
+      throw new Error(errors.join("\n"));
     }
 
     this.scheme = elements.scheme;

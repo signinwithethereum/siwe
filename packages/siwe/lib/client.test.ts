@@ -1,22 +1,22 @@
-import * as fs from 'fs'
+import { readFileSync } from 'fs'
 
 const parsingPositive: object = JSON.parse(
-	fs.readFileSync('../../test/parsing_positive.json', 'utf8')
+	readFileSync('../../test/parsing_positive.json', 'utf8')
 )
 const parsingNegative: object = JSON.parse(
-	fs.readFileSync('../../test/parsing_negative.json', 'utf8')
+	readFileSync('../../test/parsing_negative.json', 'utf8')
 )
 const parsingNegativeObjects: object = JSON.parse(
-	fs.readFileSync('../../test/parsing_negative_objects.json', 'utf8')
+	readFileSync('../../test/parsing_negative_objects.json', 'utf8')
 )
 const verificationPositive: object = JSON.parse(
-	fs.readFileSync('../../test/verification_positive.json', 'utf8')
+	readFileSync('../../test/verification_positive.json', 'utf8')
 )
 const verificationNegative: object = JSON.parse(
-	fs.readFileSync('../../test/verification_negative.json', 'utf8')
+	readFileSync('../../test/verification_negative.json', 'utf8')
 )
 const EIP1271: object = JSON.parse(
-	fs.readFileSync('../../test/eip1271.json', 'utf8')
+	readFileSync('../../test/eip1271.json', 'utf8')
 )
 
 import {
@@ -28,8 +28,15 @@ import {
 import { SiweMessage } from './client'
 import { SiweErrorType } from './types'
 
+const verificationNegativeEntries = Object.entries(verificationNegative)
+const constructorInvalidVerificationCases = new Set([
+	'invalid issuedAt',
+	'invalid notBefore',
+	'invalid expirationTime',
+])
+
 describe(`Message Generation`, () => {
-	test.concurrent.each(Object.entries(parsingPositive))(
+	test.each(Object.entries(parsingPositive))(
 		'Generates message successfully: %s',
 		(_, test: any) => {
 			const msg = new SiweMessage(test.fields)
@@ -37,33 +44,33 @@ describe(`Message Generation`, () => {
 		}
 	)
 
-	test.concurrent.each(Object.entries(parsingNegative))(
+	test.each(Object.entries(parsingNegative))(
 		'Fails to generate message: %s',
 		(n, test) => {
-			try {
-				new SiweMessage(test)
-				expect(false).toBeTruthy()
-			} catch (error) {
-				expect(true).toBeTruthy()
-			}
+			expect(() => new SiweMessage(test)).toThrow()
 		}
 	)
 
-	test.concurrent.each(Object.entries(parsingNegativeObjects))(
+	// The object constructor accepts Partial<SiweMessage> and auto-fills
+	// nonce/issuedAt via toMessage().
+	const objectConstructionValid = new Set([
+		'missing nonce',
+		'missing issuedAt',
+	])
+	test.each(
+		Object.entries(parsingNegativeObjects).filter(
+			([n]) => !objectConstructionValid.has(n)
+		)
+	)(
 		'Fails to generate message: %s',
 		(n, test) => {
-			try {
-				new SiweMessage(test as any)
-				expect(false).toBeTruthy()
-			} catch (error) {
-				expect(true).toBeTruthy()
-			}
+			expect(() => new SiweMessage(test as any)).toThrow()
 		}
 	)
 })
 
 describe(`Message verification without suppressExceptions`, () => {
-	test.concurrent.each(Object.entries(verificationPositive))(
+	test.each(Object.entries(verificationPositive))(
 		'Verifies message successfully: %s',
 		async (_, test_fields: any) => {
 			const msg = new SiweMessage(test_fields)
@@ -78,83 +85,79 @@ describe(`Message verification without suppressExceptions`, () => {
 					})
 					.then(({ success }) => success)
 			).resolves.toBeTruthy()
-
-			jest.useRealTimers()
 		}
 	)
 
-	test.concurrent.each(Object.entries(verificationNegative))(
+	test.each(
+		verificationNegativeEntries.filter(
+			([n]) => !constructorInvalidVerificationCases.has(n)
+		)
+	)(
 		'Fails to verify message: %s and rejects the promise',
 		async (n, test_fields: any) => {
-			try {
-				const msg = new SiweMessage(test_fields)
-				await expect(
-					msg
-						.verify({
-							signature: test_fields.signature,
-							time:
-								(test_fields as any).time ||
-								test_fields.issuedAt,
-							scheme: (test_fields as any).scheme,
-							domain: (test_fields as any).domainBinding,
-							nonce: (test_fields as any).matchNonce,
-						})
-						.then(({ success }) => success)
-				).rejects.toBeFalsy()
-			} catch (error) {
-				expect(Object.values(SiweErrorType).includes(error))
-			}
+			const msg = new SiweMessage(test_fields)
+			await expect(
+				msg.verify({
+					signature: test_fields.signature,
+					time: test_fields.time || test_fields.issuedAt,
+					scheme: test_fields.scheme,
+					domain: test_fields.domainBinding,
+					nonce: test_fields.matchNonce,
+				})
+			).rejects.toMatchObject({ success: false })
+		}
+	)
+
+	test.each(
+		verificationNegativeEntries.filter(([n]) =>
+			constructorInvalidVerificationCases.has(n)
+		)
+	)(
+		'Rejects invalid message fixture before verification: %s',
+		(n, test_fields: any) => {
+			expect(() => new SiweMessage(test_fields)).toThrow()
 		}
 	)
 })
 
 describe(`Message verification with suppressExceptions`, () => {
-	test.concurrent.each(Object.entries(verificationNegative))(
+	test.each(
+		verificationNegativeEntries.filter(
+			([n]) => !constructorInvalidVerificationCases.has(n)
+		)
+	)(
 		'Fails to verify message: %s but still resolves the promise',
 		async (n, test_fields: any) => {
-			try {
-				const msg = new SiweMessage(test_fields)
-				await expect(
-					msg
-						.verify(
-							{
-								signature: test_fields.signature,
-								time:
-									(test_fields as any).time ||
-									test_fields.issuedAt,
-								scheme: (test_fields as any).scheme,
-								domain: (test_fields as any).domainBinding,
-								nonce: (test_fields as any).matchNonce,
-							},
-							{ suppressExceptions: true }
-						)
-						.then(({ success }) => success)
-				).resolves.toBeFalsy()
-			} catch (error) {
-				expect(Object.values(SiweErrorType).includes(error))
-			}
+			const msg = new SiweMessage(test_fields)
+			const result = await msg.verify(
+				{
+					signature: test_fields.signature,
+					time: test_fields.time || test_fields.issuedAt,
+					scheme: test_fields.scheme,
+					domain: test_fields.domainBinding,
+					nonce: test_fields.matchNonce,
+				},
+				{ suppressExceptions: true }
+			)
+			expect(result.success).toBe(false)
+		}
+	)
+
+	test.each(
+		verificationNegativeEntries.filter(([n]) =>
+			constructorInvalidVerificationCases.has(n)
+		)
+	)(
+		'Constructor still rejects invalid message fixture with suppressExceptions: %s',
+		(n, test_fields: any) => {
+			expect(() => new SiweMessage(test_fields)).toThrow()
 		}
 	)
 })
 
 describe(`Round Trip`, () => {
 	const wallet = Wallet.createRandom()
-	test.concurrent.each(Object.entries(parsingPositive))(
-		'Generates a Successfully Verifying message: %s',
-		async (_, test: any) => {
-			const msg = new SiweMessage(test.fields)
-			msg.address = wallet.address
-			const signature = await wallet.signMessage(msg.toMessage())
-			await expect(
-				msg.verify({ signature }).then(({ success }) => success)
-			).resolves.toBeTruthy()
-		}
-	)
-})
-
-describe(`Round Trip`, () => {
-	const wallet = Wallet.createRandom()
-	test.concurrent.each(Object.entries(parsingPositive))(
+	test.each(Object.entries(parsingPositive))(
 		'Generates a Successfully Verifying message: %s',
 		async (_, test: any) => {
 			const msg = new SiweMessage(test.fields)
@@ -174,7 +177,7 @@ describe(`EIP1271`, () => {
 			: new InfuraProvider(networkId)
 	}
 
-	test.concurrent.each(Object.entries(EIP1271))(
+	test.each(Object.entries(EIP1271))(
 		'Verifies message successfully: %s',
 		async (_, test_fields: any) => {
 			const provider = getProviderCompat(1)
@@ -222,9 +225,9 @@ describe(`Unit`, () => {
 		const wallet = Wallet.createRandom()
 		const msg = new SiweMessage({
 			address: wallet.address,
-			domain: 'login.xyz',
+			domain: 'siwe.xyz',
 			statement: 'Sign In with Ethereum Example Statement',
-			uri: 'https://login.xyz',
+			uri: 'https://siwe.xyz',
 			version: '1',
 			nonce: 'bTyXgcQxn2htgkjJn',
 			issuedAt: '2022-01-27T17:09:38.578Z',
@@ -240,9 +243,9 @@ describe(`Unit`, () => {
 		const wallet = Wallet.createRandom()
 		const msg = new SiweMessage({
 			address: wallet.address,
-			domain: 'login.xyz',
+			domain: 'siwe.xyz',
 			statement: 'Sign In with Ethereum Example Statement',
-			uri: 'https://login.xyz',
+			uri: 'https://siwe.xyz',
 			version: '1',
 			nonce: 'bTyXgcQxn2htgkjJn',
 			issuedAt: '2022-01-27T17:09:38.578Z',
@@ -269,9 +272,9 @@ describe(`Unit`, () => {
 		const wallet = Wallet.createRandom()
 		const msg = new SiweMessage({
 			address: wallet.address,
-			domain: 'login.xyz',
+			domain: 'siwe.xyz',
 			statement: 'Sign In with Ethereum Example Statement',
-			uri: 'https://login.xyz',
+			uri: 'https://siwe.xyz',
 			version: '1',
 			nonce: 'bTyXgcQxn2htgkjJn',
 			issuedAt: '2022-01-27T17:09:38.578Z',
@@ -289,6 +292,80 @@ describe(`Unit`, () => {
 			expect(e.error).toEqual(
 				new Error('invalidKey is/are not valid key(s) for VerifyOpts.')
 			)
+		}
+	})
+})
+
+describe('Error type specificity', () => {
+	test('expired message returns EXPIRED_MESSAGE', async () => {
+		const fields = (verificationNegative as any)['expired message']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.EXPIRED_MESSAGE)
+		}
+	})
+
+	test('not yet valid returns NOT_YET_VALID_MESSAGE', async () => {
+		const fields = (verificationNegative as any)['not yet valid']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.NOT_YET_VALID_MESSAGE)
+		}
+	})
+
+	test('domain mismatch returns DOMAIN_MISMATCH', async () => {
+		const fields = (verificationNegative as any)['domain binding']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+				domain: fields.domainBinding,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.DOMAIN_MISMATCH)
+		}
+	})
+
+	test('nonce mismatch returns NONCE_MISMATCH', async () => {
+		const fields = (verificationNegative as any)['custom nonce']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+				nonce: fields.matchNonce,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.NONCE_MISMATCH)
+		}
+	})
+
+	test('wrong signature returns INVALID_SIGNATURE', async () => {
+		const fields = (verificationNegative as any)['wrong signature']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.INVALID_SIGNATURE)
 		}
 	})
 })

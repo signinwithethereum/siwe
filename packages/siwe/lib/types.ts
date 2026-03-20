@@ -18,7 +18,7 @@ export interface VerifyParams {
   time?: string;
 }
 
-export const VerifyParamsKeys: Array<keyof VerifyParams> = [
+export const VerifyParamsKeys: (keyof VerifyParams)[] = [
   'signature',
   'scheme',
   'domain',
@@ -52,7 +52,7 @@ export interface VerifyOpts {
   ) => Promise<SiweResponse>;
 }
 
-export const VerifyOptsKeys: Array<keyof VerifyOpts> = [
+export const VerifyOptsKeys: (keyof VerifyOpts)[] = [
   'provider',
   'config',
   'suppressExceptions',
@@ -67,7 +67,7 @@ export interface SiweResponse {
   success: boolean;
 
   /** If present `success` MUST be false and will provide extra information on the failure reason. */
-  error?: SiweError;
+  error?: SiweError | Error;
 
   /** Original message that was verified. */
   data: SiweMessage;

@@ -1,16 +1,30 @@
 {
   "name": "@signinwithethereum/ts-parser",
   "version": "3.0.1",
+  "type": "module",
   "description": "Parse Messages that conform to EIP-4361: Sign In with Ethereum (SIWE)",
-  "main": "dist/parsers.js",
+  "main": "dist/parsers.cjs",
+  "module": "dist/parsers.mjs",
   "types": "dist/parsers.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/parsers.d.ts",
+        "default": "./dist/parsers.mjs"
+      },
+      "require": {
+        "types": "./dist/parsers.d.ts",
+        "default": "./dist/parsers.cjs"
+      }
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "test": "jest",
-    "build": "tsc",
-    "lint": "eslint --ext .js,.ts .",
+    "test": "vitest run",
+    "build": "vite build",
+    "lint": "eslint .",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "apg": "apg -i ./lib/siwe-abnf.txt -o ./lib/siwe-grammar --typescript"
   },
@@ -28,13 +42,6 @@
   "dependencies": {
     "@noble/hashes": "^1.1.2",
     "apg-js": "^4.4.0"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.23.0",
-    "@typescript-eslint/parser": "^5.23.0",
-    "eslint": "^8.15.0",
-    "eslint-config-prettier": "^8.5.0",
-    "prettier": "^2.6.2"
   },
   "repository": {
     "type": "git",

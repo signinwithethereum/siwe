@@ -1,16 +1,30 @@
 {
   "name": "@signinwithethereum/ts",
   "version": "3.0.1",
+  "type": "module",
   "description": "Sign In with Ethereum",
-  "main": "dist/siwe.js",
+  "main": "dist/siwe.cjs",
+  "module": "dist/siwe.mjs",
   "types": "dist/siwe.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/siwe.d.ts",
+        "default": "./dist/siwe.mjs"
+      },
+      "require": {
+        "types": "./dist/siwe.d.ts",
+        "default": "./dist/siwe.cjs"
+      }
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "test": "jest",
-    "build": "tsc",
-    "lint": "eslint --ext .js,.ts .",
+    "test": "vitest run",
+    "build": "vite build",
+    "lint": "eslint .",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
   },
   "author": "Ethereum Identity Foundation",
@@ -27,13 +41,8 @@
     "@signinwithethereum/ts-parser": "workspace:^"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.23.0",
-    "@typescript-eslint/parser": "^5.23.0",
-    "eslint": "^8.15.0",
-    "eslint-config-prettier": "^8.5.0",
     "ethers5": "npm:ethers@^5.6.8",
     "ethers6": "npm:ethers@^6.0.8",
-    "prettier": "^2.6.2",
     "viem": "^2.0.0"
   },
   "peerDependencies": {

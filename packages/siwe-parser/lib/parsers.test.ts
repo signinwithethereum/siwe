@@ -1,11 +1,11 @@
 import { ParsedMessage } from "./parsers";
-import * as fs from "fs";
+import { readFileSync } from "fs";
 
 const parsingPositive: object = JSON.parse(
-  fs.readFileSync("../../test/parsing_positive.json", "utf8")
+  readFileSync("../../test/parsing_positive.json", "utf8")
 );
 const parsingNegative: object = JSON.parse(
-  fs.readFileSync("../../test/parsing_negative.json", "utf8")
+  readFileSync("../../test/parsing_negative.json", "utf8")
 );
 
 //

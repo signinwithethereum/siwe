@@ -1,28 +1,28 @@
 import { ParsedMessage } from "./parsers";
 import apgLib from "apg-js/src/apg-lib/node-exports";
 import { grammar } from "./siwe-grammar";
-import * as fs from "fs";
+import { readFileSync } from "fs";
 
 const validChars: object = JSON.parse(
-  fs.readFileSync("../../test/valid_chars.json", "utf-8")
+  readFileSync("../../test/valid_chars.json", "utf-8")
 );
 const invalidChars: object = JSON.parse(
-  fs.readFileSync("../../test/invalid_chars.json", "utf-8")
+  readFileSync("../../test/invalid_chars.json", "utf-8")
 );
 const validUris: object = JSON.parse(
-  fs.readFileSync("../../test/valid_uris.json", "utf-8")
+  readFileSync("../../test/valid_uris.json", "utf-8")
 );
 const invalidUris: object = JSON.parse(
-  fs.readFileSync("../../test/invalid_uris.json", "utf-8")
+  readFileSync("../../test/invalid_uris.json", "utf-8")
 );
 const validResources: object = JSON.parse(
-  fs.readFileSync("../../test/valid_resources.json", "utf-8")
+  readFileSync("../../test/valid_resources.json", "utf-8")
 );
 const invalidResources: object = JSON.parse(
-  fs.readFileSync("../../test/invalid_resources.json", "utf-8")
+  readFileSync("../../test/invalid_resources.json", "utf-8")
 );
 const validSpec: object = JSON.parse(
-  fs.readFileSync("../../test/valid_specification.json", "utf-8")
+  readFileSync("../../test/valid_specification.json", "utf-8")
 );
 
 const grammarObj = new grammar();
