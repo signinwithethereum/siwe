@@ -1,5 +1,4 @@
-// @ts-expect-error -- ethers v6 compatibility hack
-import { providers } from 'ethers';
+import type { SiweConfig } from './config';
 import { SiweMessage } from './client';
 
 export interface VerifyParams {
@@ -28,8 +27,18 @@ export const VerifyParamsKeys: Array<keyof VerifyParams> = [
 ];
 
 export interface VerifyOpts {
-  /** ethers provider to be used for EIP-1271 validation */
-  provider?: providers.Provider;
+  /**
+   * @deprecated Use `config` with a SiweConfig that includes EIP-1271 support instead.
+   * ethers provider for EIP-1271 validation.
+   */
+  provider?: any;
+
+  /**
+   * Verification config providing crypto functions.
+   * If not set, falls back to the global config (set via `configure()`),
+   * then auto-detects ethers if installed.
+   */
+  config?: SiweConfig;
 
   /** If the library should reject promises on errors, defaults to false */
   suppressExceptions?: boolean;
@@ -45,6 +54,7 @@ export interface VerifyOpts {
 
 export const VerifyOptsKeys: Array<keyof VerifyOpts> = [
   'provider',
+  'config',
   'suppressExceptions',
   'verificationFallback',
 ];
