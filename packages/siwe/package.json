@@ -1,15 +1,29 @@
 {
   "name": "@signinwithethereum/ts",
   "version": "3.0.1",
+  "type": "module",
   "description": "Sign In with Ethereum",
-  "main": "dist/siwe.js",
+  "main": "dist/siwe.cjs",
+  "module": "dist/siwe.mjs",
   "types": "dist/siwe.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/siwe.d.ts",
+        "default": "./dist/siwe.mjs"
+      },
+      "require": {
+        "types": "./dist/siwe.d.ts",
+        "default": "./dist/siwe.cjs"
+      }
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "test": "jest",
-    "build": "tsc",
+    "test": "vitest run",
+    "build": "vite build",
     "lint": "eslint --ext .js,.ts .",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
   },

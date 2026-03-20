@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import * as fs from 'fs'
 
 const parsingPositive: object = JSON.parse(
@@ -79,7 +80,7 @@ describe(`Message verification without suppressExceptions`, () => {
 					.then(({ success }) => success)
 			).resolves.toBeTruthy()
 
-			jest.useRealTimers()
+			vi.useRealTimers()
 		}
 	)
 

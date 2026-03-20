@@ -32,13 +32,13 @@ export interface ViemConfigOpts {
  * import { mainnet } from 'viem/chains';
  *
  * const publicClient = createPublicClient({ chain: mainnet, transport: http() });
- * configure(createViemConfig({ publicClient }));
+ * configure(await createViemConfig({ publicClient }));
  * ```
  */
-export function createViemConfig(opts?: ViemConfigOpts): SiweConfig {
+export async function createViemConfig(opts?: ViemConfigOpts): Promise<SiweConfig> {
   let viem: any;
   try {
-    viem = require('viem');
+    viem = await import('viem');
   } catch {
     throw new Error(
       'viem is required for createViemConfig. Install it with: npm install viem'

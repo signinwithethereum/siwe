@@ -46,7 +46,7 @@ let globalConfig: SiweConfig | null = null;
  *
  * // With viem
  * import { configure, createViemConfig } from '@signinwithethereum/ts';
- * configure(createViemConfig({ publicClient }));
+ * configure(await createViemConfig({ publicClient }));
  * ```
  */
 export function configure(config: SiweConfig): void {
