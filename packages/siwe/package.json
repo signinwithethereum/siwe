@@ -38,7 +38,7 @@
   "homepage": "https://github.com/signinwithethereum/siwe",
   "dependencies": {
     "@stablelib/random": "^1.0.1",
-    "@signinwithethereum/ts-parser": "workspace:^"
+    "@signinwithethereum/siwe-parser": "workspace:^"
   },
   "devDependencies": {
     "ethers5": "npm:ethers@^5.6.8",
