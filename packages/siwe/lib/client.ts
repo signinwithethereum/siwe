@@ -143,25 +143,25 @@ export class SiweMessage {
         this.chainId = parseIntegerNumber(this.chainId);
       }
       if (!this.domain) {
-        throw new Error("domain is required");
+        throw new SiweError(SiweErrorType.INVALID_DOMAIN, "valid domain", String(this.domain));
       }
       if (!this.address) {
-        throw new Error("address is required");
+        throw new SiweError(SiweErrorType.INVALID_ADDRESS, "valid EIP-55 address", String(this.address));
       }
       if (!this.uri) {
-        throw new Error("uri is required");
+        throw new SiweError(SiweErrorType.INVALID_URI, "valid RFC 3986 URI", String(this.uri));
       }
       if (!this.version) {
-        throw new Error("version is required");
+        throw new SiweError(SiweErrorType.INVALID_MESSAGE_VERSION, "1", String(this.version));
       }
       if (this.chainId === undefined || this.chainId === null) {
-        throw new Error("chainId is required");
+        throw new SiweError(SiweErrorType.UNABLE_TO_PARSE, "valid chain ID", String(this.chainId));
       }
       if (!this.nonce) {
-        throw new Error("nonce is required");
+        throw new SiweError(SiweErrorType.INVALID_NONCE, "alphanumeric nonce >= 8 chars", String(this.nonce));
       }
       if (!this.issuedAt) {
-        throw new Error("issuedAt is required");
+        throw new SiweError(SiweErrorType.UNABLE_TO_PARSE, "valid ISO 8601 issuedAt", String(this.issuedAt));
       }
       /* the message object is valid or parsing its stringified value will throw */
       new ParsedMessage(this.prepareMessage());
@@ -193,7 +193,9 @@ export class SiweMessage {
 
     const suffixArray = [uriField, versionField, chainField, nonceField];
 
-    suffixArray.push(`Issued At: ${this.issuedAt}`);
+    if (this.issuedAt) {
+      suffixArray.push(`Issued At: ${this.issuedAt}`);
+    }
 
     if (this.expirationTime) {
       const expiryField = `Expiration Time: ${this.expirationTime}`;
@@ -205,7 +207,7 @@ export class SiweMessage {
       suffixArray.push(`Not Before: ${this.notBefore}`);
     }
 
-    if (this.requestId) {
+    if (this.requestId !== undefined) {
       suffixArray.push(`Request ID: ${this.requestId}`);
     }
 

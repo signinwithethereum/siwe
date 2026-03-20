@@ -332,9 +332,10 @@ describe('Error type specificity', () => {
 	})
 
 	test.each([
-		['address', { domain: 'siwe.xyz' }],
+		['address', SiweErrorType.INVALID_ADDRESS, { domain: 'siwe.xyz' }],
 		[
 			'uri',
+			SiweErrorType.INVALID_URI,
 			{
 				domain: 'siwe.xyz',
 				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -342,6 +343,7 @@ describe('Error type specificity', () => {
 		],
 		[
 			'version',
+			SiweErrorType.INVALID_MESSAGE_VERSION,
 			{
 				domain: 'siwe.xyz',
 				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -350,6 +352,7 @@ describe('Error type specificity', () => {
 		],
 		[
 			'chainId',
+			SiweErrorType.UNABLE_TO_PARSE,
 			{
 				domain: 'siwe.xyz',
 				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -359,6 +362,7 @@ describe('Error type specificity', () => {
 		],
 		[
 			'nonce',
+			SiweErrorType.INVALID_NONCE,
 			{
 				domain: 'siwe.xyz',
 				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -369,6 +373,7 @@ describe('Error type specificity', () => {
 		],
 		[
 			'issuedAt',
+			SiweErrorType.UNABLE_TO_PARSE,
 			{
 				domain: 'siwe.xyz',
 				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -378,10 +383,13 @@ describe('Error type specificity', () => {
 				nonce: 'bTyXgcQxn2htgkjJn',
 			},
 		],
-	])('constructor requires %s on object input', (field, partialMessage) => {
-		expect(() => new SiweMessage(partialMessage as any)).toThrow(
-			`${field} is required`
-		)
+	])('constructor requires %s on object input', (field, errorType, partialMessage) => {
+		try {
+			new SiweMessage(partialMessage as any)
+			expect.unreachable('should have thrown')
+		} catch (e: any) {
+			expect(e.type).toBe(errorType)
+		}
 	})
 
 	test('expired message returns EXPIRED_MESSAGE', async () => {
@@ -722,5 +730,190 @@ describe('Error type specificity', () => {
 		)
 		expect(result.success).toBe(false)
 		expect((result.error as any).type).toBe(SiweErrorType.INVALID_TIME_FORMAT)
+	})
+
+	test('scheme mismatch returns SCHEME_MISMATCH', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			scheme: 'https',
+			domain: 'siwe.xyz',
+			statement: 'Test',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		try {
+			await msg.verify({
+				signature,
+				domain: msg.domain,
+				nonce: msg.nonce,
+				time: msg.issuedAt,
+				scheme: 'http',
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.SCHEME_MISMATCH)
+		}
+	})
+
+	test('empty requestId survives toMessage round-trip', () => {
+		const msg = new SiweMessage({
+			domain: 'service.org',
+			address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+			statement: 'Test',
+			uri: 'https://service.org/login',
+			version: '1',
+			chainId: 1,
+			nonce: '32891757',
+			issuedAt: '2021-09-30T16:25:24.000Z',
+			requestId: '',
+		})
+		const message = msg.toMessage()
+		expect(message).toContain('Request ID: ')
+		const reparsed = new SiweMessage(message)
+		expect(reparsed.requestId).toBe('')
+	})
+
+	test('chainId 0 can be constructed and verified', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Test',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 0,
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		expect(msg.chainId).toBe(0)
+		const message = msg.toMessage()
+		expect(message).toContain('Chain ID: 0')
+		const signature = await wallet.signMessage(message)
+		const result = await msg.verify({
+			signature,
+			domain: msg.domain,
+			nonce: msg.nonce,
+			chainId: 0,
+		})
+		expect(result.success).toBe(true)
+	})
+
+	test('object constructor rejects statement with line break', () => {
+		expect(
+			() =>
+				new SiweMessage({
+					domain: 'service.org',
+					address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+					statement: 'line\nbreak',
+					uri: 'https://service.org/login',
+					version: '1',
+					chainId: 1,
+					nonce: '32891757',
+					issuedAt: '2021-09-30T16:25:24.000Z',
+				})
+		).toThrow()
+	})
+
+	test('both expirationTime and notBefore in same verification', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Test',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			notBefore: '2022-01-27T17:09:38.578Z',
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		const result = await msg.verify({
+			signature,
+			domain: msg.domain,
+			nonce: msg.nonce,
+			time: '2023-01-01T00:00:00.000Z',
+		})
+		expect(result.success).toBe(true)
+	})
+
+	test('both temporal constraints reject when expired', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Test',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			notBefore: '2022-01-27T17:09:38.578Z',
+			expirationTime: '2023-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		try {
+			await msg.verify({
+				signature,
+				domain: msg.domain,
+				nonce: msg.nonce,
+				time: '2024-01-01T00:00:00.000Z',
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.EXPIRED_MESSAGE)
+		}
+	})
+
+	test('both temporal constraints reject when not yet valid', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Test',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			notBefore: '2025-01-01T00:00:00.000Z',
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		try {
+			await msg.verify({
+				signature,
+				domain: msg.domain,
+				nonce: msg.nonce,
+				time: '2024-01-01T00:00:00.000Z',
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.NOT_YET_VALID_MESSAGE)
+		}
+	})
+
+	test('constructor throws INVALID_DOMAIN for missing domain', () => {
+		try {
+			new SiweMessage({
+				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+				uri: 'https://siwe.xyz',
+				version: '1',
+				chainId: 1,
+				nonce: 'bTyXgcQxn2htgkjJn',
+				issuedAt: '2022-01-27T17:09:38.578Z',
+			} as any)
+			expect.unreachable('should have thrown')
+		} catch (e: any) {
+			expect(e.type).toBe(SiweErrorType.INVALID_DOMAIN)
+		}
 	})
 })
