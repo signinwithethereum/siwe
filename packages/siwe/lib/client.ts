@@ -142,6 +142,9 @@ export class SiweMessage {
       if (typeof this.chainId === "string") {
         this.chainId = parseIntegerNumber(this.chainId);
       }
+      if (!this.domain) {
+        throw new Error("domain is required");
+      }
       this.nonce = this.nonce || generateNonce();
       /* the message object is valid or parsing its stringified value will throw */
       new ParsedMessage(this.prepareMessage());
