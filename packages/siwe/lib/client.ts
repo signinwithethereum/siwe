@@ -1,7 +1,7 @@
 import {
   ParsedMessage,
   parseIntegerNumber,
-} from "@signinwithethereum/ts-parser";
+} from "@signinwithethereum/siwe-parser";
 
 import type { SiweConfig } from "./config";
 import { getGlobalConfig } from "./config";

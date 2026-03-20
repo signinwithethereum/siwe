@@ -6,21 +6,23 @@
 		"build": "pnpm -r run build",
 		"test": "pnpm -r run test",
 		"lint": "pnpm -r run lint",
-		"docs": "typedoc --plugin nlfurniss-typedoc-plugin-sourcefile-url --plugin typedoc-plugin-extras --sourcefile-url-prefix 'https://github.com/signinwithethereum/siwe' --favicon ./favicon.svg --out docs packages/siwe/lib/siwe.ts",
-		"publish": "pnpm -r run build && pnpm -r publish"
+		"changeset": "changeset",
+		"docs": "typedoc --plugin nlfurniss-typedoc-plugin-sourcefile-url --plugin typedoc-plugin-extras --sourcefile-url-prefix 'https://github.com/signinwithethereum/siwe' --favicon ./favicon.svg --out docs packages/siwe/lib/siwe.ts"
 	},
 	"author": "Ethereum Identity Foundation",
 	"license": "Apache-2.0",
 	"devDependencies": {
+		"@changesets/changelog-github": "^0.6.0",
+		"@changesets/cli": "^2.30.0",
 		"@types/node": "^18.0.0",
 		"eslint": "^9.0.0",
 		"eslint-config-prettier": "^10.0.0",
-		"typescript-eslint": "^8.0.0",
 		"nlfurniss-typedoc-plugin-sourcefile-url": "^2.0.0",
 		"prettier": "^3.0.0",
 		"typedoc": "^0.24.8",
 		"typedoc-plugin-extras": "^2.2.1",
 		"typescript": "^5.0.0",
+		"typescript-eslint": "^8.0.0",
 		"vite": "^6.0.0",
 		"vite-plugin-dts": "^4.0.0",
 		"vitest": "^3.0.0"

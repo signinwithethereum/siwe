@@ -1,5 +1,5 @@
 import { randomStringForEntropy } from '@stablelib/random';
-import { isValidISO8601Date } from '@signinwithethereum/ts-parser';
+import { isValidISO8601Date } from '@signinwithethereum/siwe-parser';
 
 import type { SiweMessage } from './client';
 import type { SiweConfig } from './config';

@@ -11,7 +11,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-        '@signinwithethereum/ts-parser',
+        '@signinwithethereum/siwe-parser',
         '@stablelib/random',
         'ethers',
         'viem',
