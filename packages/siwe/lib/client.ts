@@ -16,6 +16,7 @@ import {
   VerifyParamsKeys,
 } from "./types";
 import {
+  ChainIdMismatchError,
   checkContractWalletSignature,
   checkInvalidKeys,
 } from "./utils";
@@ -186,7 +187,7 @@ export class SiweMessage {
     let prefix = [header, this.address].join("\n");
     const versionField = `Version: ${this.version}`;
 
-    const chainField = `Chain ID: ` + this.chainId || "1";
+    const chainField = `Chain ID: ${this.chainId}`;
 
     const nonceField = `Nonce: ${this.nonce}`;
 
@@ -345,7 +346,7 @@ export class SiweMessage {
     }
 
     /** Chain binding */
-    if (chainId && chainId !== this.chainId) {
+    if (chainId != null && chainId !== this.chainId) {
       return fail({
         success: false,
         data: this,
@@ -449,12 +450,7 @@ export class SiweMessage {
         return { success: true, data: this };
       })
       .catch((error): SiweResponse => {
-        if (
-          error instanceof Error &&
-          (error.message.includes("does not match message chainId") ||
-            error.message.includes("requires a provider with getNetwork()") ||
-            error.message.includes("requires a viem publicClient with chain.id"))
-        ) {
+        if (error instanceof ChainIdMismatchError) {
           return {
             success: false,
             data: this,

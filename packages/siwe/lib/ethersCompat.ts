@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { EIP1271_MAGICVALUE } from './config';
 import type { SiweConfig } from './config';
+import { ChainIdMismatchError } from './utils';
 
 type Ethers6BigNumberish = string | number | bigint;
 
@@ -105,7 +106,7 @@ export function createEthersConfig(provider?: any): SiweConfig {
       chainId: number
     ) => {
       if (typeof provider.getNetwork !== 'function') {
-        throw new Error(
+        throw new ChainIdMismatchError(
           'EIP-1271 verification requires a provider with getNetwork() support.'
         );
       }
@@ -113,7 +114,7 @@ export function createEthersConfig(provider?: any): SiweConfig {
       const network = await provider.getNetwork();
       const providerChainId = Number(network?.chainId);
       if (providerChainId !== chainId) {
-        throw new Error(
+        throw new ChainIdMismatchError(
           `Provider chainId ${providerChainId} does not match message chainId ${chainId}.`
         );
       }

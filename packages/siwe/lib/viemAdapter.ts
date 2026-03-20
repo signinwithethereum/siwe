@@ -1,5 +1,6 @@
 import { EIP1271_MAGICVALUE } from './config';
 import type { SiweConfig } from './config';
+import { ChainIdMismatchError } from './utils';
 
 const EIP1271_ABI = [
   {
@@ -73,12 +74,12 @@ export async function createViemConfig(opts?: ViemConfigOpts): Promise<SiweConfi
     ) => {
       const clientChainId = publicClient.chain?.id;
       if (clientChainId == null) {
-        throw new Error(
+        throw new ChainIdMismatchError(
           'EIP-1271 verification requires a viem publicClient with chain.id.'
         );
       }
       if (clientChainId !== chainId) {
-        throw new Error(
+        throw new ChainIdMismatchError(
           `publicClient chainId ${clientChainId} does not match message chainId ${chainId}.`
         );
       }
