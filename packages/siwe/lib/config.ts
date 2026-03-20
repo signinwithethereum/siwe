@@ -28,7 +28,8 @@ export interface SiweConfig {
   checkContractWalletSignature?: (
     address: string,
     message: string,
-    signature: string
+    signature: string,
+    chainId: number
   ) => Promise<boolean>;
 }
 

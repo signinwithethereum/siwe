@@ -16,8 +16,8 @@ import {
   VerifyParamsKeys,
 } from "./types";
 import {
+  ChainIdMismatchError,
   checkContractWalletSignature,
-  generateNonce,
   checkInvalidKeys,
 } from "./utils";
 
@@ -143,9 +143,26 @@ export class SiweMessage {
         this.chainId = parseIntegerNumber(this.chainId);
       }
       if (!this.domain) {
-        throw new Error("domain is required");
+        throw new SiweError(SiweErrorType.INVALID_DOMAIN, "valid domain", String(this.domain));
       }
-      this.nonce = this.nonce || generateNonce();
+      if (!this.address) {
+        throw new SiweError(SiweErrorType.INVALID_ADDRESS, "valid EIP-55 address", String(this.address));
+      }
+      if (!this.uri) {
+        throw new SiweError(SiweErrorType.INVALID_URI, "valid RFC 3986 URI", String(this.uri));
+      }
+      if (!this.version) {
+        throw new SiweError(SiweErrorType.INVALID_MESSAGE_VERSION, "1", String(this.version));
+      }
+      if (this.chainId === undefined || this.chainId === null) {
+        throw new SiweError(SiweErrorType.UNABLE_TO_PARSE, "valid chain ID", String(this.chainId));
+      }
+      if (!this.nonce) {
+        throw new SiweError(SiweErrorType.INVALID_NONCE, "alphanumeric nonce >= 8 chars", String(this.nonce));
+      }
+      if (!this.issuedAt) {
+        throw new SiweError(SiweErrorType.UNABLE_TO_PARSE, "valid ISO 8601 issuedAt", String(this.issuedAt));
+      }
       /* the message object is valid or parsing its stringified value will throw */
       new ParsedMessage(this.prepareMessage());
     }
@@ -170,19 +187,15 @@ export class SiweMessage {
     let prefix = [header, this.address].join("\n");
     const versionField = `Version: ${this.version}`;
 
-    if (!this.nonce) {
-      this.nonce = generateNonce();
-    }
-
-    const chainField = `Chain ID: ` + this.chainId || "1";
+    const chainField = `Chain ID: ${this.chainId}`;
 
     const nonceField = `Nonce: ${this.nonce}`;
 
     const suffixArray = [uriField, versionField, chainField, nonceField];
 
-    this.issuedAt = this.issuedAt || new Date().toISOString();
-
-    suffixArray.push(`Issued At: ${this.issuedAt}`);
+    if (this.issuedAt) {
+      suffixArray.push(`Issued At: ${this.issuedAt}`);
+    }
 
     if (this.expirationTime) {
       const expiryField = `Expiration Time: ${this.expirationTime}`;
@@ -194,7 +207,7 @@ export class SiweMessage {
       suffixArray.push(`Not Before: ${this.notBefore}`);
     }
 
-    if (this.requestId) {
+    if (this.requestId !== undefined) {
       suffixArray.push(`Request ID: ${this.requestId}`);
     }
 
@@ -287,10 +300,47 @@ export class SiweMessage {
       });
     }
 
-    const { signature, scheme, domain, nonce, time } = params;
+    const { signature, scheme, domain, nonce, uri, chainId, requestId, time } =
+      params;
+
+    /** Domain is required for origin binding */
+    if (!domain) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(SiweErrorType.MISSING_DOMAIN),
+      });
+    }
+
+    /** Nonce is required for replay resistance */
+    if (!nonce) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(SiweErrorType.MISSING_NONCE),
+      });
+    }
+
+    /** Strict mode: also require uri and chainId */
+    if (opts.strict) {
+      if (uri === undefined) {
+        return fail({
+          success: false,
+          data: this,
+          error: new SiweError(SiweErrorType.MISSING_URI),
+        });
+      }
+      if (chainId == null) {
+        return fail({
+          success: false,
+          data: this,
+          error: new SiweError(SiweErrorType.MISSING_CHAIN_ID),
+        });
+      }
+    }
 
     /** Scheme for domain binding */
-    if (scheme && scheme !== this.scheme) {
+    if (scheme !== undefined && scheme !== this.scheme) {
       return fail({
         success: false,
         data: this,
@@ -303,7 +353,7 @@ export class SiweMessage {
     }
 
     /** Domain binding */
-    if (domain && domain !== this.domain) {
+    if (domain !== undefined && domain !== this.domain) {
       return fail({
         success: false,
         data: this,
@@ -316,7 +366,7 @@ export class SiweMessage {
     }
 
     /** Nonce binding */
-    if (nonce && nonce !== this.nonce) {
+    if (nonce !== undefined && nonce !== this.nonce) {
       return fail({
         success: false,
         data: this,
@@ -324,8 +374,56 @@ export class SiweMessage {
       });
     }
 
+    /** URI binding */
+    if (uri !== undefined && uri !== this.uri) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(SiweErrorType.URI_MISMATCH, uri, this.uri),
+      });
+    }
+
+    /** Chain binding */
+    if (chainId != null && chainId !== this.chainId) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(
+          SiweErrorType.CHAIN_ID_MISMATCH,
+          String(chainId),
+          String(this.chainId)
+        ),
+      });
+    }
+
+    /** Request ID binding */
+    if (requestId !== undefined && requestId !== this.requestId) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(
+          SiweErrorType.REQUEST_ID_MISMATCH,
+          requestId,
+          this.requestId
+        ),
+      });
+    }
+
     /** Check time or now */
     const checkTime = new Date(time || new Date());
+
+    /** Reject invalid time values that would silently disable temporal checks */
+    if (isNaN(checkTime.getTime())) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(
+          SiweErrorType.INVALID_TIME_FORMAT,
+          'valid ISO 8601 datetime',
+          String(time)
+        ),
+      });
+    }
 
     /** Message not expired */
     if (this.expirationTime) {
@@ -403,6 +501,17 @@ export class SiweMessage {
         return { success: true, data: this };
       })
       .catch((error): SiweResponse => {
+        if (error instanceof ChainIdMismatchError) {
+          return {
+            success: false,
+            data: this,
+            error: new SiweError(
+              SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
+              String(this.chainId),
+              error.message
+            ),
+          };
+        }
         return { success: false, data: this, error };
       });
 

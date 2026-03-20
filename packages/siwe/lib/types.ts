@@ -8,11 +8,20 @@ export interface VerifyParams {
   /** RFC 3986 URI scheme for the authority that is requesting the signing. */
   scheme?: string;
 
-  /** RFC 4501 dns authority that is requesting the signing. */
-  domain?: string;
+  /** RFC 4501 dns authority that is requesting the signing. Required for origin binding. */
+  domain: string;
 
-  /** Randomized token used to prevent replay attacks, at least 8 alphanumeric characters. */
-  nonce?: string;
+  /** Randomized token used to prevent replay attacks, at least 8 alphanumeric characters. Required for replay resistance. */
+  nonce: string;
+
+  /** RFC 3986 URI referring to the resource that is the subject of the signing. */
+  uri?: string;
+
+  /** EIP-155 Chain ID to which the session is bound. */
+  chainId?: number;
+
+  /** System-specific identifier referring to the sign-in request. */
+  requestId?: string;
 
   /**ISO 8601 datetime string of the current time. */
   time?: string;
@@ -23,6 +32,9 @@ export const VerifyParamsKeys: (keyof VerifyParams)[] = [
   'scheme',
   'domain',
   'nonce',
+  'uri',
+  'chainId',
+  'requestId',
   'time',
 ];
 
@@ -50,6 +62,12 @@ export interface VerifyOpts {
     message: SiweMessage,
     EIP1271Promise: Promise<SiweResponse>
   ) => Promise<SiweResponse>;
+
+  /**
+   * When true, requires uri and chainId in addition to the always-required
+   * domain and nonce. Use this to enforce full contextual binding.
+   */
+  strict?: boolean;
 }
 
 export const VerifyOptsKeys: (keyof VerifyOpts)[] = [
@@ -57,6 +75,7 @@ export const VerifyOptsKeys: (keyof VerifyOpts)[] = [
   'config',
   'suppressExceptions',
   'verificationFallback',
+  'strict',
 ];
 
 /**
@@ -116,6 +135,15 @@ export enum SiweErrorType {
   /** `nonce` don't match the nonce provided for verification. */
   NONCE_MISMATCH = 'Nonce does not match provided nonce for verification.',
 
+  /** `uri` does not match the URI provided for verification. */
+  URI_MISMATCH = 'URI does not match provided URI for verification.',
+
+  /** `chainId` does not match the chain ID provided for verification. */
+  CHAIN_ID_MISMATCH = 'Chain ID does not match provided chain ID for verification.',
+
+  /** `requestId` does not match the request ID provided for verification. */
+  REQUEST_ID_MISMATCH = 'Request ID does not match provided request ID for verification.',
+
   /** `address` does not conform to EIP-55 or is not a valid address. */
   INVALID_ADDRESS = 'Invalid address.',
 
@@ -131,6 +159,9 @@ export enum SiweErrorType {
   /** Signature doesn't match the address of the message. */
   INVALID_SIGNATURE = 'Signature does not match address of the message.',
 
+  /** EIP-1271 verification was attempted with a provider/client on the wrong chain. */
+  INVALID_SIGNATURE_CHAIN_ID = 'Contract wallet verification provider chain does not match message chain ID.',
+
   /** `expirationTime`, `notBefore` or `issuedAt` not compliant to ISO-8601. */
   INVALID_TIME_FORMAT = 'Invalid time format.',
 
@@ -139,4 +170,16 @@ export enum SiweErrorType {
 
   /** Thrown when some required field is missing. */
   UNABLE_TO_PARSE = 'Unable to parse the message.',
+
+  /** `domain` was not provided for verification. */
+  MISSING_DOMAIN = 'Domain is required for verification.',
+
+  /** `nonce` was not provided for verification. */
+  MISSING_NONCE = 'Nonce is required for verification.',
+
+  /** `uri` was not provided in strict mode. */
+  MISSING_URI = 'URI is required in strict mode.',
+
+  /** `chainId` was not provided in strict mode. */
+  MISSING_CHAIN_ID = 'Chain ID is required in strict mode.',
 }

@@ -24,7 +24,8 @@ export const checkContractWalletSignature = async (
   return config.checkContractWalletSignature(
     message.address,
     message.prepareMessage(),
-    signature
+    signature,
+    message.chainId
   );
 };
 
@@ -48,6 +49,17 @@ export const generateNonce = (): string => {
 };
 
 export { isValidISO8601Date };
+
+/**
+ * Thrown by adapter chain-ID validation so the caller can match
+ * on type instead of fragile string checks.
+ */
+export class ChainIdMismatchError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ChainIdMismatchError';
+  }
+}
 
 export const checkInvalidKeys = <T>(
   obj: T,
