@@ -1,29 +1,7 @@
 import apgLib from "apg-js/src/apg-lib/node-exports";
 const utils = apgLib.utils;
 const id = apgLib.ids;
-import { isEIP55Address, parseIntegerNumber } from "./utils";
-
-/* copied from siwe/lib/utils.ts */
-const ISO8601 =
-  /^(?<date>[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01]))[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(.[0-9]+)?(([Zz])|([+|-]([01][0-9]|2[0-3]):[0-5][0-9]))$/;
-const isValidISO8601Date = (inputDate: string): boolean => {
-  /* Split groups and make sure inputDate is in ISO8601 format */
-  const inputMatch = ISO8601.exec(inputDate);
-
-  /* if inputMatch is null the date is not ISO-8601 */
-  if (!inputMatch) {
-    return false;
-  }
-
-  /* Creates a date object with input date to parse for invalid days e.g. Feb, 30 -> Mar, 01 */
-  const inputDateParsed = new Date(inputMatch.groups.date).toISOString();
-
-  /* Get groups from new parsed date to compare with the original input */
-  const parsedInputMatch = ISO8601.exec(inputDateParsed);
-
-  /* Compare remaining fields */
-  return inputMatch.groups.date === parsedInputMatch.groups.date;
-};
+import { isEIP55Address, isValidISO8601Date, parseIntegerNumber } from "./utils";
 
 export const cb = {
   signInWithEtherium: function (result, chars, phraseIndex, data) {
