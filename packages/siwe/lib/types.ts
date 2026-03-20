@@ -8,11 +8,11 @@ export interface VerifyParams {
   /** RFC 3986 URI scheme for the authority that is requesting the signing. */
   scheme?: string;
 
-  /** RFC 4501 dns authority that is requesting the signing. */
-  domain?: string;
+  /** RFC 4501 dns authority that is requesting the signing. Required for origin binding. */
+  domain: string;
 
-  /** Randomized token used to prevent replay attacks, at least 8 alphanumeric characters. */
-  nonce?: string;
+  /** Randomized token used to prevent replay attacks, at least 8 alphanumeric characters. Required for replay resistance. */
+  nonce: string;
 
   /** RFC 3986 URI referring to the resource that is the subject of the signing. */
   uri?: string;
@@ -62,6 +62,12 @@ export interface VerifyOpts {
     message: SiweMessage,
     EIP1271Promise: Promise<SiweResponse>
   ) => Promise<SiweResponse>;
+
+  /**
+   * When true, requires uri and chainId in addition to the always-required
+   * domain and nonce. Use this to enforce full contextual binding.
+   */
+  strict?: boolean;
 }
 
 export const VerifyOptsKeys: (keyof VerifyOpts)[] = [
@@ -69,6 +75,7 @@ export const VerifyOptsKeys: (keyof VerifyOpts)[] = [
   'config',
   'suppressExceptions',
   'verificationFallback',
+  'strict',
 ];
 
 /**
@@ -163,4 +170,16 @@ export enum SiweErrorType {
 
   /** Thrown when some required field is missing. */
   UNABLE_TO_PARSE = 'Unable to parse the message.',
+
+  /** `domain` was not provided for verification. */
+  MISSING_DOMAIN = 'Domain is required for verification.',
+
+  /** `nonce` was not provided for verification. */
+  MISSING_NONCE = 'Nonce is required for verification.',
+
+  /** `uri` was not provided in strict mode. */
+  MISSING_URI = 'URI is required in strict mode.',
+
+  /** `chainId` was not provided in strict mode. */
+  MISSING_CHAIN_ID = 'Chain ID is required in strict mode.',
 }

@@ -68,8 +68,8 @@ describe(`Message verification without suppressExceptions`, () => {
 						signature: test_fields.signature,
 						time: (test_fields as any).time || test_fields.issuedAt,
 						scheme: (test_fields as any).scheme,
-						domain: (test_fields as any).domainBinding,
-						nonce: (test_fields as any).matchNonce,
+						domain: (test_fields as any).domainBinding ?? test_fields.domain,
+						nonce: (test_fields as any).matchNonce ?? test_fields.nonce,
 					})
 					.then(({ success }) => success)
 			).resolves.toBeTruthy()
@@ -89,8 +89,8 @@ describe(`Message verification without suppressExceptions`, () => {
 					signature: test_fields.signature,
 					time: test_fields.time || test_fields.issuedAt,
 					scheme: test_fields.scheme,
-					domain: test_fields.domainBinding,
-					nonce: test_fields.matchNonce,
+					domain: test_fields.domainBinding ?? test_fields.domain,
+					nonce: test_fields.matchNonce ?? test_fields.nonce,
 				})
 			).rejects.toMatchObject({ success: false })
 		}
@@ -122,8 +122,8 @@ describe(`Message verification with suppressExceptions`, () => {
 					signature: test_fields.signature,
 					time: test_fields.time || test_fields.issuedAt,
 					scheme: test_fields.scheme,
-					domain: test_fields.domainBinding,
-					nonce: test_fields.matchNonce,
+					domain: test_fields.domainBinding ?? test_fields.domain,
+					nonce: test_fields.matchNonce ?? test_fields.nonce,
 				},
 				{ suppressExceptions: true }
 			)
@@ -152,7 +152,9 @@ describe(`Round Trip`, () => {
 			msg.address = wallet.address
 			const signature = await wallet.signMessage(msg.toMessage())
 			await expect(
-				msg.verify({ signature }).then(({ success }) => success)
+				msg
+					.verify({ signature, domain: msg.domain, nonce: msg.nonce })
+					.then(({ success }) => success)
 			).resolves.toBeTruthy()
 		}
 	)
@@ -184,6 +186,8 @@ describe(`EIP1271`, () => {
 					.verify(
 						{
 							signature: test_fields.signature,
+							domain: msg.domain,
+							nonce: msg.nonce,
 						},
 						{
 							config,
@@ -232,7 +236,11 @@ describe(`Unit`, () => {
 			expirationTime: '2100-01-07T14:31:43.952Z',
 		})
 		const signature = await wallet.signMessage(msg.toMessage())
-		const result = await (msg as any).verify({ signature })
+		const result = await (msg as any).verify({
+			signature,
+			domain: msg.domain,
+			nonce: msg.nonce,
+		})
 		expect(result.success).toBeTruthy()
 	})
 
@@ -253,6 +261,8 @@ describe(`Unit`, () => {
 		try {
 			await (msg as any).verify({
 				signature,
+				domain: msg.domain,
+				nonce: msg.nonce,
 				invalidKey: 'should throw',
 			})
 		} catch (e) {
@@ -281,7 +291,7 @@ describe(`Unit`, () => {
 		const signature = await wallet.signMessage(msg.toMessage())
 		try {
 			await (msg as any).verify(
-				{ signature },
+				{ signature, domain: msg.domain, nonce: msg.nonce },
 				{ suppressExceptions: true, invalidKey: 'should throw' }
 			)
 		} catch (e) {
@@ -311,6 +321,8 @@ describe('Error type specificity', () => {
 		const signature = await wallet.signMessage(msg.toMessage())
 		const result = await msg.verify({
 			signature,
+			domain: msg.domain,
+			nonce: msg.nonce,
 			time: msg.issuedAt,
 			uri: msg.uri,
 			chainId: msg.chainId,
@@ -378,6 +390,8 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
+				domain: fields.domain,
+				nonce: fields.nonce,
 				time: fields.time || fields.issuedAt,
 			})
 			expect.unreachable('should have rejected')
@@ -392,6 +406,8 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
+				domain: fields.domain,
+				nonce: fields.nonce,
 				time: fields.time || fields.issuedAt,
 			})
 			expect.unreachable('should have rejected')
@@ -406,8 +422,9 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
-				time: fields.time || fields.issuedAt,
 				domain: fields.domainBinding,
+				nonce: fields.nonce,
+				time: fields.time || fields.issuedAt,
 			})
 			expect.unreachable('should have rejected')
 		} catch (e: any) {
@@ -421,6 +438,8 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
+				domain: fields.domain,
+				nonce: fields.nonce,
 				time: fields.issuedAt,
 				uri: 'https://example.com/not-the-same',
 			})
@@ -436,6 +455,8 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
+				domain: fields.domain,
+				nonce: fields.nonce,
 				time: fields.issuedAt,
 				chainId: fields.chainId + 1,
 			})
@@ -463,6 +484,8 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature,
+				domain: msg.domain,
+				nonce: msg.nonce,
 				requestId: 'different-request-id',
 				time: msg.issuedAt,
 			})
@@ -478,6 +501,8 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
+				domain: fields.domain,
+				nonce: fields.nonce,
 				time: fields.issuedAt,
 				requestId: 'unexpected-request-id',
 			})
@@ -493,8 +518,9 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
-				time: fields.time || fields.issuedAt,
+				domain: fields.domain,
 				nonce: fields.matchNonce,
+				time: fields.time || fields.issuedAt,
 			})
 			expect.unreachable('should have rejected')
 		} catch (e: any) {
@@ -508,6 +534,8 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
+				domain: fields.domain,
+				nonce: fields.nonce,
 				time: fields.time || fields.issuedAt,
 			})
 			expect.unreachable('should have rejected')
@@ -522,6 +550,8 @@ describe('Error type specificity', () => {
 		try {
 			await msg.verify({
 				signature: fields.signature,
+				domain: fields.domain,
+				nonce: fields.nonce,
 				time: fields.issuedAt,
 				chainId: 0,
 			})
@@ -538,7 +568,7 @@ describe('Error type specificity', () => {
 			getNetwork: async () => ({ chainId: 5 }),
 		})
 		const result = await msg.verify(
-			{ signature: testFields.signature },
+			{ signature: testFields.signature, domain: msg.domain, nonce: msg.nonce },
 			{ config, suppressExceptions: true }
 		)
 		expect(result.success).toBe(false)
@@ -552,7 +582,7 @@ describe('Error type specificity', () => {
 		const msg = new SiweMessage(testFields.message)
 		const config = createEthersConfig({})
 		const result = await msg.verify(
-			{ signature: testFields.signature },
+			{ signature: testFields.signature, domain: msg.domain, nonce: msg.nonce },
 			{
 				config,
 				suppressExceptions: true,
@@ -573,7 +603,7 @@ describe('Error type specificity', () => {
 			},
 		})
 		const result = await msg.verify(
-			{ signature: testFields.signature },
+			{ signature: testFields.signature, domain: msg.domain, nonce: msg.nonce },
 			{
 				config,
 				suppressExceptions: true,
@@ -583,5 +613,114 @@ describe('Error type specificity', () => {
 		expect((result.error as any).type).toBe(
 			SiweErrorType.INVALID_SIGNATURE_CHAIN_ID
 		)
+	})
+
+	test('verify rejects missing domain', async () => {
+		const fields = (verificationPositive as any)['example message']
+		const msg = new SiweMessage(fields)
+		const result = await msg.verify(
+			{ signature: fields.signature, nonce: fields.nonce } as any,
+			{ suppressExceptions: true }
+		)
+		expect(result.success).toBe(false)
+		expect((result.error as any).type).toBe(SiweErrorType.MISSING_DOMAIN)
+	})
+
+	test('verify rejects missing nonce', async () => {
+		const fields = (verificationPositive as any)['example message']
+		const msg = new SiweMessage(fields)
+		const result = await msg.verify(
+			{ signature: fields.signature, domain: fields.domain } as any,
+			{ suppressExceptions: true }
+		)
+		expect(result.success).toBe(false)
+		expect((result.error as any).type).toBe(SiweErrorType.MISSING_NONCE)
+	})
+
+	test('strict mode rejects missing uri', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Test',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		const result = await msg.verify(
+			{ signature, domain: msg.domain, nonce: msg.nonce, chainId: msg.chainId },
+			{ suppressExceptions: true, strict: true }
+		)
+		expect(result.success).toBe(false)
+		expect((result.error as any).type).toBe(SiweErrorType.MISSING_URI)
+	})
+
+	test('strict mode rejects missing chainId', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Test',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		const result = await msg.verify(
+			{ signature, domain: msg.domain, nonce: msg.nonce, uri: msg.uri },
+			{ suppressExceptions: true, strict: true }
+		)
+		expect(result.success).toBe(false)
+		expect((result.error as any).type).toBe(SiweErrorType.MISSING_CHAIN_ID)
+	})
+
+	test('strict mode accepts all required fields', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Test',
+			uri: 'https://siwe.xyz',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		const result = await msg.verify(
+			{
+				signature,
+				domain: msg.domain,
+				nonce: msg.nonce,
+				uri: msg.uri,
+				chainId: msg.chainId,
+			},
+			{ strict: true }
+		)
+		expect(result.success).toBe(true)
+	})
+
+	test('invalid time string rejects with INVALID_TIME_FORMAT', async () => {
+		const fields = (verificationPositive as any)['example message']
+		const msg = new SiweMessage(fields)
+		const result = await msg.verify(
+			{
+				signature: fields.signature,
+				domain: fields.domain,
+				nonce: fields.nonce,
+				time: 'not-a-date',
+			},
+			{ suppressExceptions: true }
+		)
+		expect(result.success).toBe(false)
+		expect((result.error as any).type).toBe(SiweErrorType.INVALID_TIME_FORMAT)
 	})
 })

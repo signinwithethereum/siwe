@@ -301,6 +301,42 @@ export class SiweMessage {
     const { signature, scheme, domain, nonce, uri, chainId, requestId, time } =
       params;
 
+    /** Domain is required for origin binding */
+    if (!domain) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(SiweErrorType.MISSING_DOMAIN),
+      });
+    }
+
+    /** Nonce is required for replay resistance */
+    if (!nonce) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(SiweErrorType.MISSING_NONCE),
+      });
+    }
+
+    /** Strict mode: also require uri and chainId */
+    if (opts.strict) {
+      if (uri === undefined) {
+        return fail({
+          success: false,
+          data: this,
+          error: new SiweError(SiweErrorType.MISSING_URI),
+        });
+      }
+      if (chainId == null) {
+        return fail({
+          success: false,
+          data: this,
+          error: new SiweError(SiweErrorType.MISSING_CHAIN_ID),
+        });
+      }
+    }
+
     /** Scheme for domain binding */
     if (scheme !== undefined && scheme !== this.scheme) {
       return fail({
@@ -373,6 +409,19 @@ export class SiweMessage {
 
     /** Check time or now */
     const checkTime = new Date(time || new Date());
+
+    /** Reject invalid time values that would silently disable temporal checks */
+    if (isNaN(checkTime.getTime())) {
+      return fail({
+        success: false,
+        data: this,
+        error: new SiweError(
+          SiweErrorType.INVALID_TIME_FORMAT,
+          'valid ISO 8601 datetime',
+          String(time)
+        ),
+      });
+    }
 
     /** Message not expired */
     if (this.expirationTime) {
