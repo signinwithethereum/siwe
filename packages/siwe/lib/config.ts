@@ -1,3 +1,6 @@
+/** EIP-1271 magic value returned by isValidSignature for valid signatures */
+export const EIP1271_MAGICVALUE = '0x1626ba7e';
+
 /**
  * Provider-agnostic configuration for SIWE verification.
  * Implement this interface to use any Ethereum library (ethers, viem, etc.).

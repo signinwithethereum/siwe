@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { EIP1271_MAGICVALUE } from './config';
 import type { SiweConfig } from './config';
 
 type Ethers6BigNumberish = string | number | bigint;
@@ -32,8 +33,6 @@ type Ethers6SignatureLike =
 const EIP1271_ABI = [
   'function isValidSignature(bytes32 _message, bytes _signature) public view returns (bytes4)',
 ];
-const EIP1271_MAGICVALUE = '0x1626ba7e';
-
 let ethersVerifyMessage = null;
 let ethersHashMessage = null;
 let ethersGetAddress = null;
@@ -93,15 +92,9 @@ export function createEthersConfig(provider?: any): SiweConfig {
   }
 
   const config: SiweConfig = {
-    verifyMessage: (message: string, signature: string) => {
-      return ethersVerifyMessage(message, signature);
-    },
-    hashMessage: (message: string) => {
-      return ethersHashMessage(message);
-    },
-    getAddress: (address: string) => {
-      return ethersGetAddress(address);
-    },
+    verifyMessage: ethersVerifyMessage,
+    hashMessage: ethersHashMessage,
+    getAddress: ethersGetAddress,
   };
 
   if (provider && EthersContract) {
@@ -127,11 +120,20 @@ export function createEthersConfig(provider?: any): SiweConfig {
   return config;
 }
 
+let cachedDefaultConfig: SiweConfig | null = null;
+
 /**
  * Try to create an ethers-based SiweConfig automatically.
  * Returns null if ethers is not available.
+ * Memoizes the no-provider case to avoid allocation per verify() call.
  */
 export function tryAutoDetectEthers(provider?: any): SiweConfig | null {
   if (!ethersVerifyMessage) return null;
+  if (!provider) {
+    if (!cachedDefaultConfig) {
+      cachedDefaultConfig = createEthersConfig();
+    }
+    return cachedDefaultConfig;
+  }
   return createEthersConfig(provider);
 }

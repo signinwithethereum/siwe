@@ -1,3 +1,4 @@
+import { EIP1271_MAGICVALUE } from './config';
 import type { SiweConfig } from './config';
 
 const EIP1271_ABI = [
@@ -12,8 +13,6 @@ const EIP1271_ABI = [
     type: 'function',
   },
 ] as const;
-
-const EIP1271_MAGICVALUE = '0x1626ba7e';
 
 export interface ViemConfigOpts {
   /** viem PublicClient for EIP-1271 smart contract wallet verification */
