@@ -4,9 +4,9 @@
   "description": "Sign In with Ethereum",
   "main": "dist/siwe.js",
   "types": "dist/siwe.d.ts",
-  "directories": {
-    "lib": "lib"
-  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "jest",
     "build": "tsc",
