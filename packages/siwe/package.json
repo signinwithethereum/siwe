@@ -1,8 +1,8 @@
 {
-  "name": "@signinwithethereum/ts",
+  "name": "@signinwithethereum/siwe",
   "version": "3.0.1",
   "type": "module",
-  "description": "Sign In with Ethereum",
+  "description": "Sign in with Ethereum (SIWE)",
   "main": "dist/siwe.cjs",
   "module": "dist/siwe.mjs",
   "types": "dist/siwe.d.ts",

@@ -1,8 +1,8 @@
 {
-  "name": "@signinwithethereum/ts-parser",
+  "name": "@signinwithethereum/siwe-parser",
   "version": "3.0.1",
   "type": "module",
-  "description": "Parse Messages that conform to EIP-4361: Sign In with Ethereum (SIWE)",
+  "description": "Parse Messages that conform to EIP-4361: Sign in with Ethereum (SIWE)",
   "main": "dist/parsers.cjs",
   "module": "dist/parsers.mjs",
   "types": "dist/parsers.d.ts",
