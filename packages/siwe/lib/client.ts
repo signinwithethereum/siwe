@@ -1,4 +1,3 @@
-// TODO: Figure out how to get types from this lib:
 import {
   ParsedMessage,
   parseIntegerNumber,
