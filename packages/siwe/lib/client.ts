@@ -30,12 +30,15 @@ function resolveConfig(opts: VerifyOpts): SiweConfig {
     return opts.config;
   }
 
+  // eslint-disable-next-line deprecation/deprecation -- backward compat: removed in next major
+  const { provider } = opts;
+
   const global = getGlobalConfig();
   if (global) {
     // If a legacy provider was passed alongside global config, create an ethers
     // config with that provider for EIP-1271 support
-    if (opts.provider && !global.checkContractWalletSignature) {
-      const ethersConfig = tryAutoDetectEthers(opts.provider);
+    if (provider && !global.checkContractWalletSignature) {
+      const ethersConfig = tryAutoDetectEthers(provider);
       if (ethersConfig) {
         return {
           ...global,
@@ -48,7 +51,7 @@ function resolveConfig(opts: VerifyOpts): SiweConfig {
   }
 
   // Backward compat: auto-detect ethers
-  const ethersConfig = tryAutoDetectEthers(opts.provider);
+  const ethersConfig = tryAutoDetectEthers(provider);
   if (ethersConfig) {
     return ethersConfig;
   }
