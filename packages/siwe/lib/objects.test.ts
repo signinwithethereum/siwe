@@ -1,8 +1,8 @@
 import { SiweMessage } from './client';
-import * as fs from 'fs';
+import { readFileSync } from 'fs';
 
 const messages: object = JSON.parse(
-  fs.readFileSync('../../test/message_objects.json', 'utf8')
+  readFileSync('../../test/message_objects.json', 'utf8')
 );
 
 let siweMsg;

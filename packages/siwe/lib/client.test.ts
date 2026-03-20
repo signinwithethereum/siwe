@@ -1,23 +1,23 @@
 import { vi } from 'vitest'
-import * as fs from 'fs'
+import { readFileSync } from 'fs'
 
 const parsingPositive: object = JSON.parse(
-	fs.readFileSync('../../test/parsing_positive.json', 'utf8')
+	readFileSync('../../test/parsing_positive.json', 'utf8')
 )
 const parsingNegative: object = JSON.parse(
-	fs.readFileSync('../../test/parsing_negative.json', 'utf8')
+	readFileSync('../../test/parsing_negative.json', 'utf8')
 )
 const parsingNegativeObjects: object = JSON.parse(
-	fs.readFileSync('../../test/parsing_negative_objects.json', 'utf8')
+	readFileSync('../../test/parsing_negative_objects.json', 'utf8')
 )
 const verificationPositive: object = JSON.parse(
-	fs.readFileSync('../../test/verification_positive.json', 'utf8')
+	readFileSync('../../test/verification_positive.json', 'utf8')
 )
 const verificationNegative: object = JSON.parse(
-	fs.readFileSync('../../test/verification_negative.json', 'utf8')
+	readFileSync('../../test/verification_negative.json', 'utf8')
 )
 const EIP1271: object = JSON.parse(
-	fs.readFileSync('../../test/eip1271.json', 'utf8')
+	readFileSync('../../test/eip1271.json', 'utf8')
 )
 
 import {

@@ -51,9 +51,9 @@ export { isValidISO8601Date };
 
 export const checkInvalidKeys = <T>(
   obj: T,
-  keys: Array<keyof T>
-): Array<keyof T> => {
-  const invalidKeys: Array<keyof T> = [];
+  keys: (keyof T)[]
+): (keyof T)[] => {
+  const invalidKeys: (keyof T)[] = [];
   Object.keys(obj).forEach(key => {
     if (!keys.includes(key as keyof T)) {
       invalidKeys.push(key as keyof T);
