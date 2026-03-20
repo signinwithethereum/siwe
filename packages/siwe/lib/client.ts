@@ -2,7 +2,7 @@
 import {
   ParsedMessage,
   parseIntegerNumber,
-} from "sign-in-with-ethereum-parser";
+} from "@signinwithethereum/ts-parser";
 
 import { Provider, verifyMessage } from "./ethersCompat";
 import {

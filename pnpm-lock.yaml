@@ -41,15 +41,15 @@ importers:
 
   packages/siwe:
     dependencies:
+      '@signinwithethereum/ts-parser':
+        specifier: workspace:^
+        version: link:../siwe-parser
       '@stablelib/random':
         specifier: ^1.0.1
         version: 1.0.2
       ethers:
         specifier: ^5.6.8 || ^6.0.8
         version: 6.16.0
-      sign-in-with-ethereum-parser:
-        specifier: ^3.0.1
-        version: 3.0.1
     devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.23.0
@@ -1606,9 +1606,6 @@ packages:
 
   shiki@0.14.7:
     resolution: {integrity: sha512-dNPAPrxSc87ua2sKJ3H5dQ/6ZaY8RNnaAqK+t0eG7p0Soi2ydiqbGOTaZCqaYvA/uZYfS1LJnemt3Q+mSfcPCg==}
-
-  sign-in-with-ethereum-parser@3.0.1:
-    resolution: {integrity: sha512-66sGtHcwBuv8beQ22P+Bsav4drDM4Of21sih1lmcQKcMI4MHzlTh6ET6qFGG5a8YGkiVwSqCKfCbf6nf59vuNg==}
 
   signal-exit@3.0.7:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
@@ -3901,11 +3898,6 @@ snapshots:
       jsonc-parser: 3.3.1
       vscode-oniguruma: 1.7.0
       vscode-textmate: 8.0.0
-
-  sign-in-with-ethereum-parser@3.0.1:
-    dependencies:
-      '@noble/hashes': 1.8.0
-      apg-js: 4.4.0
 
   signal-exit@3.0.7: {}
 
