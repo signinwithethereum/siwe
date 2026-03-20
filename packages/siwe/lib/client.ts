@@ -376,8 +376,8 @@ export class SiweMessage {
       let addr;
       try {
         addr = await config.verifyMessage(EIP4361Message, signature);
-      } catch (e) {
-        console.error(e);
+      } catch {
+        // verifyMessage throws on malformed signatures — fall through to INVALID_SIGNATURE
       }
       /** Match signature with message's address */
       if (addr === this.address) {
