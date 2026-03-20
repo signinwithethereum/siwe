@@ -223,9 +223,9 @@ describe(`Unit`, () => {
 		const wallet = Wallet.createRandom()
 		const msg = new SiweMessage({
 			address: wallet.address,
-			domain: 'login.xyz',
+			domain: 'siwe.xyz',
 			statement: 'Sign In with Ethereum Example Statement',
-			uri: 'https://login.xyz',
+			uri: 'https://siwe.xyz',
 			version: '1',
 			nonce: 'bTyXgcQxn2htgkjJn',
 			issuedAt: '2022-01-27T17:09:38.578Z',
@@ -241,9 +241,9 @@ describe(`Unit`, () => {
 		const wallet = Wallet.createRandom()
 		const msg = new SiweMessage({
 			address: wallet.address,
-			domain: 'login.xyz',
+			domain: 'siwe.xyz',
 			statement: 'Sign In with Ethereum Example Statement',
-			uri: 'https://login.xyz',
+			uri: 'https://siwe.xyz',
 			version: '1',
 			nonce: 'bTyXgcQxn2htgkjJn',
 			issuedAt: '2022-01-27T17:09:38.578Z',
@@ -270,9 +270,9 @@ describe(`Unit`, () => {
 		const wallet = Wallet.createRandom()
 		const msg = new SiweMessage({
 			address: wallet.address,
-			domain: 'login.xyz',
+			domain: 'siwe.xyz',
 			statement: 'Sign In with Ethereum Example Statement',
-			uri: 'https://login.xyz',
+			uri: 'https://siwe.xyz',
 			version: '1',
 			nonce: 'bTyXgcQxn2htgkjJn',
 			issuedAt: '2022-01-27T17:09:38.578Z',
