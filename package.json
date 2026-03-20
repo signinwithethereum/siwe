@@ -1,5 +1,5 @@
 {
-	"name": "sign-in-with-ethereum-root",
+	"name": "@signinwithethereum/ts",
 	"private": true,
 	"workspaces": [
 		"packages/siwe-parser",
