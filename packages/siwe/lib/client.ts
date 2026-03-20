@@ -302,7 +302,7 @@ export class SiweMessage {
       params;
 
     /** Scheme for domain binding */
-    if (scheme && scheme !== this.scheme) {
+    if (scheme !== undefined && scheme !== this.scheme) {
       return fail({
         success: false,
         data: this,
@@ -315,7 +315,7 @@ export class SiweMessage {
     }
 
     /** Domain binding */
-    if (domain && domain !== this.domain) {
+    if (domain !== undefined && domain !== this.domain) {
       return fail({
         success: false,
         data: this,
@@ -328,7 +328,7 @@ export class SiweMessage {
     }
 
     /** Nonce binding */
-    if (nonce && nonce !== this.nonce) {
+    if (nonce !== undefined && nonce !== this.nonce) {
       return fail({
         success: false,
         data: this,
@@ -337,7 +337,7 @@ export class SiweMessage {
     }
 
     /** URI binding */
-    if (uri && uri !== this.uri) {
+    if (uri !== undefined && uri !== this.uri) {
       return fail({
         success: false,
         data: this,
@@ -359,7 +359,7 @@ export class SiweMessage {
     }
 
     /** Request ID binding */
-    if (requestId && requestId !== this.requestId) {
+    if (requestId !== undefined && requestId !== this.requestId) {
       return fail({
         success: false,
         data: this,

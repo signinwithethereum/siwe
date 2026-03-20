@@ -20,12 +20,10 @@ const EIP1271: object = JSON.parse(
 )
 
 import {
-	// @ts-expect-error -- ethers v6 compatibility hack
-	providers,
-	InfuraProvider,
 	Wallet,
 } from 'ethers'
 import { SiweMessage } from './client'
+import { createEthersConfig, createViemConfig } from './siwe'
 import { SiweErrorType } from './types'
 
 const verificationNegativeEntries = Object.entries(verificationNegative)
@@ -161,17 +159,26 @@ describe(`Round Trip`, () => {
 })
 
 describe(`EIP1271`, () => {
-	function getProviderCompat(networkId: number | string) {
-		return typeof providers?.InfuraProvider !== 'undefined'
-			? new providers.InfuraProvider(networkId)
-			: new InfuraProvider(networkId)
-	}
-
 	test.each(Object.entries(EIP1271))(
 		'Verifies message successfully: %s',
 		async (_, test_fields: any) => {
-			const provider = getProviderCompat(1)
 			const msg = new SiweMessage(test_fields.message)
+			const config = {
+				verifyMessage: async () =>
+					'0x0000000000000000000000000000000000000000',
+				hashMessage: () => '0x00',
+				getAddress: (address: string) => address,
+				checkContractWalletSignature: async (
+					address: string,
+					message: string,
+					signature: string,
+					chainId: number
+				) =>
+					address === msg.address &&
+					message === msg.prepareMessage() &&
+					signature === test_fields.signature &&
+					chainId === msg.chainId,
+			}
 			await expect(
 				msg
 					.verify(
@@ -179,7 +186,7 @@ describe(`EIP1271`, () => {
 							signature: test_fields.signature,
 						},
 						{
-							provider,
+							config,
 						}
 					)
 					.then(({ success }) => success)
@@ -287,6 +294,84 @@ describe(`Unit`, () => {
 })
 
 describe('Error type specificity', () => {
+	test('verify accepts matching uri, chainId, and requestId bindings', async () => {
+		const wallet = Wallet.createRandom()
+		const msg = new SiweMessage({
+			address: wallet.address,
+			domain: 'siwe.xyz',
+			statement: 'Sign In with Ethereum Example Statement',
+			uri: 'https://siwe.xyz/login',
+			version: '1',
+			nonce: 'bTyXgcQxn2htgkjJn',
+			issuedAt: '2022-01-27T17:09:38.578Z',
+			chainId: 1,
+			requestId: 'expected-request-id',
+			expirationTime: '2100-01-07T14:31:43.952Z',
+		})
+		const signature = await wallet.signMessage(msg.toMessage())
+		const result = await msg.verify({
+			signature,
+			time: msg.issuedAt,
+			uri: msg.uri,
+			chainId: msg.chainId,
+			requestId: msg.requestId,
+		})
+		expect(result.success).toBe(true)
+	})
+
+	test.each([
+		['address', { domain: 'siwe.xyz' }],
+		[
+			'uri',
+			{
+				domain: 'siwe.xyz',
+				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+			},
+		],
+		[
+			'version',
+			{
+				domain: 'siwe.xyz',
+				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+				uri: 'https://siwe.xyz',
+			},
+		],
+		[
+			'chainId',
+			{
+				domain: 'siwe.xyz',
+				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+				uri: 'https://siwe.xyz',
+				version: '1',
+			},
+		],
+		[
+			'nonce',
+			{
+				domain: 'siwe.xyz',
+				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+				uri: 'https://siwe.xyz',
+				version: '1',
+				chainId: 1,
+			},
+		],
+		[
+			'issuedAt',
+			{
+				domain: 'siwe.xyz',
+				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+				uri: 'https://siwe.xyz',
+				version: '1',
+				chainId: 1,
+				nonce: 'bTyXgcQxn2htgkjJn',
+			},
+		],
+	])('constructor requires %s on object input', (field, partialMessage) => {
+		expect(() => new SiweMessage(partialMessage as any)).toThrow(
+			`${field} is required`
+		)
+	})
+
 	test('expired message returns EXPIRED_MESSAGE', async () => {
 		const fields = (verificationNegative as any)['expired message']
 		const msg = new SiweMessage(fields)
@@ -387,6 +472,21 @@ describe('Error type specificity', () => {
 		}
 	})
 
+	test('requestId mismatch returns REQUEST_ID_MISMATCH when message has no requestId', async () => {
+		const fields = (verificationPositive as any)['example message']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.issuedAt,
+				requestId: 'unexpected-request-id',
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.REQUEST_ID_MISMATCH)
+		}
+	})
+
 	test('nonce mismatch returns NONCE_MISMATCH', async () => {
 		const fields = (verificationNegative as any)['custom nonce']
 		const msg = new SiweMessage(fields)
@@ -414,5 +514,74 @@ describe('Error type specificity', () => {
 		} catch (e: any) {
 			expect(e.error.type).toBe(SiweErrorType.INVALID_SIGNATURE)
 		}
+	})
+
+	test('chainId mismatch returns CHAIN_ID_MISMATCH for zero', async () => {
+		const fields = (verificationPositive as any)['example message']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.issuedAt,
+				chainId: 0,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.CHAIN_ID_MISMATCH)
+		}
+	})
+
+	test('EIP1271 rejects provider chain mismatch', async () => {
+		const testFields = (EIP1271 as any).argent
+		const msg = new SiweMessage(testFields.message)
+		const config = createEthersConfig({
+			getNetwork: async () => ({ chainId: 5 }),
+		})
+		const result = await msg.verify(
+			{ signature: testFields.signature },
+			{ config, suppressExceptions: true }
+		)
+		expect(result.success).toBe(false)
+		expect((result.error as any).type).toBe(
+			SiweErrorType.INVALID_SIGNATURE_CHAIN_ID
+		)
+	})
+
+	test('EIP1271 rejects provider without getNetwork support', async () => {
+		const testFields = (EIP1271 as any).argent
+		const msg = new SiweMessage(testFields.message)
+		const config = createEthersConfig({})
+		const result = await msg.verify(
+			{ signature: testFields.signature },
+			{
+				config,
+				suppressExceptions: true,
+			}
+		)
+		expect(result.success).toBe(false)
+		expect((result.error as any).type).toBe(
+			SiweErrorType.INVALID_SIGNATURE_CHAIN_ID
+		)
+	})
+
+	test('EIP1271 rejects viem client without chain.id', async () => {
+		const testFields = (EIP1271 as any).argent
+		const msg = new SiweMessage(testFields.message)
+		const config = await createViemConfig({
+			publicClient: {
+				readContract: async () => '0x1626ba7e',
+			},
+		})
+		const result = await msg.verify(
+			{ signature: testFields.signature },
+			{
+				config,
+				suppressExceptions: true,
+			}
+		)
+		expect(result.success).toBe(false)
+		expect((result.error as any).type).toBe(
+			SiweErrorType.INVALID_SIGNATURE_CHAIN_ID
+		)
 	})
 })
