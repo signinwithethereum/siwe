@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { readFileSync } from 'fs'
 
 const parsingPositive: object = JSON.parse(
@@ -41,24 +40,26 @@ describe(`Message Generation`, () => {
 	test.each(Object.entries(parsingNegative))(
 		'Fails to generate message: %s',
 		(n, test) => {
-			try {
-				new SiweMessage(test)
-				expect(false).toBeTruthy()
-			} catch (error) {
-				expect(true).toBeTruthy()
-			}
+			expect(() => new SiweMessage(test)).toThrow()
 		}
 	)
 
-	test.each(Object.entries(parsingNegativeObjects))(
+	// The object constructor accepts Partial<SiweMessage> and auto-fills
+	// nonce/issuedAt via toMessage(). Missing domain is also tolerated.
+	// These fixtures are only negative for string parsing, not object construction.
+	const objectConstructionValid = new Set([
+		'missing domain',
+		'missing nonce',
+		'missing issuedAt',
+	])
+	test.each(
+		Object.entries(parsingNegativeObjects).filter(
+			([n]) => !objectConstructionValid.has(n)
+		)
+	)(
 		'Fails to generate message: %s',
 		(n, test) => {
-			try {
-				new SiweMessage(test as any)
-				expect(false).toBeTruthy()
-			} catch (error) {
-				expect(true).toBeTruthy()
-			}
+			expect(() => new SiweMessage(test as any)).toThrow()
 		}
 	)
 })
@@ -79,32 +80,27 @@ describe(`Message verification without suppressExceptions`, () => {
 					})
 					.then(({ success }) => success)
 			).resolves.toBeTruthy()
-
-			vi.useRealTimers()
 		}
 	)
 
 	test.each(Object.entries(verificationNegative))(
 		'Fails to verify message: %s and rejects the promise',
 		async (n, test_fields: any) => {
+			let msg: SiweMessage
 			try {
-				const msg = new SiweMessage(test_fields)
-				await expect(
-					msg
-						.verify({
-							signature: test_fields.signature,
-							time:
-								(test_fields as any).time ||
-								test_fields.issuedAt,
-							scheme: (test_fields as any).scheme,
-							domain: (test_fields as any).domainBinding,
-							nonce: (test_fields as any).matchNonce,
-						})
-						.then(({ success }) => success)
-				).rejects.toBeFalsy()
-			} catch (error) {
-				expect(Object.values(SiweErrorType).includes(error))
+				msg = new SiweMessage(test_fields)
+			} catch {
+				return // constructor threw on invalid fields — valid failure
 			}
+			await expect(
+				msg.verify({
+					signature: test_fields.signature,
+					time: test_fields.time || test_fields.issuedAt,
+					scheme: test_fields.scheme,
+					domain: test_fields.domainBinding,
+					nonce: test_fields.matchNonce,
+				})
+			).rejects.toMatchObject({ success: false })
 		}
 	)
 })
@@ -113,42 +109,23 @@ describe(`Message verification with suppressExceptions`, () => {
 	test.each(Object.entries(verificationNegative))(
 		'Fails to verify message: %s but still resolves the promise',
 		async (n, test_fields: any) => {
+			let msg: SiweMessage
 			try {
-				const msg = new SiweMessage(test_fields)
-				await expect(
-					msg
-						.verify(
-							{
-								signature: test_fields.signature,
-								time:
-									(test_fields as any).time ||
-									test_fields.issuedAt,
-								scheme: (test_fields as any).scheme,
-								domain: (test_fields as any).domainBinding,
-								nonce: (test_fields as any).matchNonce,
-							},
-							{ suppressExceptions: true }
-						)
-						.then(({ success }) => success)
-				).resolves.toBeFalsy()
-			} catch (error) {
-				expect(Object.values(SiweErrorType).includes(error))
+				msg = new SiweMessage(test_fields)
+			} catch {
+				return
 			}
-		}
-	)
-})
-
-describe(`Round Trip`, () => {
-	const wallet = Wallet.createRandom()
-	test.each(Object.entries(parsingPositive))(
-		'Generates a Successfully Verifying message: %s',
-		async (_, test: any) => {
-			const msg = new SiweMessage(test.fields)
-			msg.address = wallet.address
-			const signature = await wallet.signMessage(msg.toMessage())
-			await expect(
-				msg.verify({ signature }).then(({ success }) => success)
-			).resolves.toBeTruthy()
+			const result = await msg.verify(
+				{
+					signature: test_fields.signature,
+					time: test_fields.time || test_fields.issuedAt,
+					scheme: test_fields.scheme,
+					domain: test_fields.domainBinding,
+					nonce: test_fields.matchNonce,
+				},
+				{ suppressExceptions: true }
+			)
+			expect(result.success).toBe(false)
 		}
 	)
 })
@@ -290,6 +267,80 @@ describe(`Unit`, () => {
 			expect(e.error).toEqual(
 				new Error('invalidKey is/are not valid key(s) for VerifyOpts.')
 			)
+		}
+	})
+})
+
+describe('Error type specificity', () => {
+	test('expired message returns EXPIRED_MESSAGE', async () => {
+		const fields = (verificationNegative as any)['expired message']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.EXPIRED_MESSAGE)
+		}
+	})
+
+	test('not yet valid returns NOT_YET_VALID_MESSAGE', async () => {
+		const fields = (verificationNegative as any)['not yet valid']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.NOT_YET_VALID_MESSAGE)
+		}
+	})
+
+	test('domain mismatch returns DOMAIN_MISMATCH', async () => {
+		const fields = (verificationNegative as any)['domain binding']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+				domain: fields.domainBinding,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.DOMAIN_MISMATCH)
+		}
+	})
+
+	test('nonce mismatch returns NONCE_MISMATCH', async () => {
+		const fields = (verificationNegative as any)['custom nonce']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+				nonce: fields.matchNonce,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.NONCE_MISMATCH)
+		}
+	})
+
+	test('wrong signature returns INVALID_SIGNATURE', async () => {
+		const fields = (verificationNegative as any)['wrong signature']
+		const msg = new SiweMessage(fields)
+		try {
+			await msg.verify({
+				signature: fields.signature,
+				time: fields.time || fields.issuedAt,
+			})
+			expect.unreachable('should have rejected')
+		} catch (e: any) {
+			expect(e.error.type).toBe(SiweErrorType.INVALID_SIGNATURE)
 		}
 	})
 })

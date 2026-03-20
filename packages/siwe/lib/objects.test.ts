@@ -1,21 +1,16 @@
-import { SiweMessage } from './client';
-import { readFileSync } from 'fs';
+import { SiweMessage } from './client'
+import { readFileSync } from 'fs'
 
 const messages: object = JSON.parse(
-  readFileSync('../../test/message_objects.json', 'utf8')
-);
+	readFileSync('../../test/message_objects.json', 'utf8')
+)
 
-let siweMsg;
-let re;
-describe(`Message Generation`, () => {
-  test.concurrent.each(Object.entries(messages))('%s', (n, test) => {
-    try {
-      siweMsg = new SiweMessage(test.msg);
-      expect(siweMsg).toBeDefined();
-    } catch (tryError) {
-      re = new RegExp(`(.|\n)*${test.error}`);
-      console.error(test.error);
-      expect(n.startsWith('invalid')).toBe(true);
-    }
-  });
-});
+describe('Message Generation', () => {
+	test.each(Object.entries(messages))('%s', (n, test: any) => {
+		if (test.error === 'none') {
+			expect(new SiweMessage(test.msg)).toBeDefined()
+		} else {
+			expect(() => new SiweMessage(test.msg)).toThrow()
+		}
+	})
+})
