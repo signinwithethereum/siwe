@@ -1,11 +1,11 @@
 import {
   ParsedMessage,
   parseIntegerNumber,
-} from "@signinwithethereum/siwe-parser";
+} from '@signinwithethereum/siwe-parser'
 
-import type { SiweConfig } from "./config";
-import { getGlobalConfig } from "./config";
-import { tryAutoDetectEthers } from "./ethersCompat";
+import type { SiweConfig } from './config'
+import { getGlobalConfig } from './config'
+import { tryAutoDetectEthers } from './ethersCompat'
 import {
   SiweError,
   SiweErrorType,
@@ -14,12 +14,12 @@ import {
   VerifyOptsKeys,
   VerifyParams,
   VerifyParamsKeys,
-} from "./types";
+} from './types'
 import {
   ChainIdMismatchError,
   checkContractWalletSignature,
   checkInvalidKeys,
-} from "./utils";
+} from './utils'
 
 /**
  * Resolve the SiweConfig to use for verification.
@@ -27,80 +27,80 @@ import {
  */
 function resolveConfig(opts: VerifyOpts): SiweConfig {
   if (opts.config) {
-    return opts.config;
+    return opts.config
   }
 
-  const { provider } = opts;
+  const { provider } = opts
 
-  const global = getGlobalConfig();
+  const global = getGlobalConfig()
   if (global) {
     // If a legacy provider was passed alongside global config, create an ethers
     // config with that provider for EIP-1271 support
     if (provider && !global.checkContractWalletSignature) {
-      const ethersConfig = tryAutoDetectEthers(provider);
+      const ethersConfig = tryAutoDetectEthers(provider)
       if (ethersConfig) {
         return {
           ...global,
           checkContractWalletSignature:
             ethersConfig.checkContractWalletSignature,
-        };
+        }
       }
     }
-    return global;
+    return global
   }
 
   // Backward compat: auto-detect ethers
-  const ethersConfig = tryAutoDetectEthers(provider);
+  const ethersConfig = tryAutoDetectEthers(provider)
   if (ethersConfig) {
-    return ethersConfig;
+    return ethersConfig
   }
 
   throw new Error(
-    "No verification config found. Either:\n" +
-      "  - Call configure() with a SiweConfig\n" +
-      "  - Pass { config } in VerifyOpts\n" +
-      "  - Install ethers (npm install ethers) for automatic detection\n" +
-      "  - Install viem and use createViemConfig()"
-  );
+    'No verification config found. Either:\n' +
+      '  - Call configure() with a SiweConfig\n' +
+      '  - Pass { config } in VerifyOpts\n' +
+      '  - Install ethers (npm install ethers) for automatic detection\n' +
+      '  - Install viem and use createViemConfig()',
+  )
 }
 
 export class SiweMessage {
   /**RFC 3986 URI scheme for the authority that is requesting the signing. */
-  scheme?: string;
+  scheme?: string
   /**RFC 4501 dns authority that is requesting the signing. */
-  domain: string;
+  domain: string
   /**Ethereum address performing the signing conformant to capitalization
    * encoded checksum specified in EIP-55 where applicable. */
-  address: string;
+  address: string
   /**Human-readable ASCII assertion that the user will sign, and it must not
    * contain `\n`. */
-  statement?: string;
+  statement?: string
   /**RFC 3986 URI referring to the resource that is the subject of the signing
    *  (as in the __subject__ of a claim). */
-  uri: string;
+  uri: string
   /**Current version of the message. */
-  version: string;
+  version: string
   /**EIP-155 Chain ID to which the session is bound, and the network where
    * Contract Accounts must be resolved. */
-  chainId: number;
+  chainId: number
   /**Randomized token used to prevent replay attacks, at least 8 alphanumeric
    * characters. */
-  nonce: string;
+  nonce: string
   /**ISO 8601 datetime string of the current time. */
-  issuedAt?: string;
+  issuedAt?: string
   /**ISO 8601 datetime string that, if present, indicates when the signed
    * authentication message is no longer valid. */
-  expirationTime?: string;
+  expirationTime?: string
   /**ISO 8601 datetime string that, if present, indicates when the signed
    * authentication message will become valid. */
-  notBefore?: string;
+  notBefore?: string
   /**System-specific identifier that may be used to uniquely refer to the
    * sign-in request. */
-  requestId?: string;
+  requestId?: string
   /**List of information or references to information the user wishes to have
    * resolved as part of authentication by the relying party. They are
    * expressed as RFC 3986 URIs separated by `\n- `. */
-  resources?: string[];
+  resources?: string[]
 
   /**
    * Creates a parsed Sign In with Ethereum Message (EIP-4361) object from a
@@ -109,62 +109,90 @@ export class SiweMessage {
    * @param param {string | SiweMessage} Sign message as a string or an object.
    */
   constructor(param: string | Partial<SiweMessage>) {
-    if (typeof param === "string") {
+    if (typeof param === 'string') {
       /* the message string (including nonce) is valid or ParsedMessage will throw */
-      const parsedMessage = new ParsedMessage(param);
-      this.scheme = parsedMessage.scheme;
-      this.domain = parsedMessage.domain;
-      this.address = parsedMessage.address;
-      this.statement = parsedMessage.statement;
-      this.uri = parsedMessage.uri;
-      this.version = parsedMessage.version;
-      this.nonce = parsedMessage.nonce;
-      this.issuedAt = parsedMessage.issuedAt;
-      this.expirationTime = parsedMessage.expirationTime;
-      this.notBefore = parsedMessage.notBefore;
-      this.requestId = parsedMessage.requestId;
-      this.chainId = parsedMessage.chainId;
-      this.resources = parsedMessage.resources;
+      const parsedMessage = new ParsedMessage(param)
+      this.scheme = parsedMessage.scheme
+      this.domain = parsedMessage.domain
+      this.address = parsedMessage.address
+      this.statement = parsedMessage.statement
+      this.uri = parsedMessage.uri
+      this.version = parsedMessage.version
+      this.nonce = parsedMessage.nonce
+      this.issuedAt = parsedMessage.issuedAt
+      this.expirationTime = parsedMessage.expirationTime
+      this.notBefore = parsedMessage.notBefore
+      this.requestId = parsedMessage.requestId
+      this.chainId = parsedMessage.chainId
+      this.resources = parsedMessage.resources
     } else {
-      this.scheme = param?.scheme;
-      this.domain = param.domain;
-      this.address = param.address;
-      this.statement = param?.statement;
-      this.uri = param.uri;
-      this.version = param.version;
-      this.chainId = param.chainId;
-      this.nonce = param.nonce;
-      this.issuedAt = param?.issuedAt;
-      this.expirationTime = param?.expirationTime;
-      this.notBefore = param?.notBefore;
-      this.requestId = param?.requestId;
-      this.resources = param?.resources;
-      if (typeof this.chainId === "string") {
-        this.chainId = parseIntegerNumber(this.chainId);
+      this.scheme = param?.scheme
+      this.domain = param.domain
+      this.address = param.address
+      this.statement = param?.statement
+      this.uri = param.uri
+      this.version = param.version
+      this.chainId = param.chainId
+      this.nonce = param.nonce
+      this.issuedAt = param?.issuedAt
+      this.expirationTime = param?.expirationTime
+      this.notBefore = param?.notBefore
+      this.requestId = param?.requestId
+      this.resources = param?.resources
+      if (typeof this.chainId === 'string') {
+        this.chainId = parseIntegerNumber(this.chainId)
       }
       if (!this.domain) {
-        throw new SiweError(SiweErrorType.INVALID_DOMAIN, "valid domain", String(this.domain));
+        throw new SiweError(
+          SiweErrorType.INVALID_DOMAIN,
+          'valid domain',
+          String(this.domain),
+        )
       }
       if (!this.address) {
-        throw new SiweError(SiweErrorType.INVALID_ADDRESS, "valid EIP-55 address", String(this.address));
+        throw new SiweError(
+          SiweErrorType.INVALID_ADDRESS,
+          'valid EIP-55 address',
+          String(this.address),
+        )
       }
       if (!this.uri) {
-        throw new SiweError(SiweErrorType.INVALID_URI, "valid RFC 3986 URI", String(this.uri));
+        throw new SiweError(
+          SiweErrorType.INVALID_URI,
+          'valid RFC 3986 URI',
+          String(this.uri),
+        )
       }
       if (!this.version) {
-        throw new SiweError(SiweErrorType.INVALID_MESSAGE_VERSION, "1", String(this.version));
+        throw new SiweError(
+          SiweErrorType.INVALID_MESSAGE_VERSION,
+          '1',
+          String(this.version),
+        )
       }
       if (this.chainId === undefined || this.chainId === null) {
-        throw new SiweError(SiweErrorType.UNABLE_TO_PARSE, "valid chain ID", String(this.chainId));
+        throw new SiweError(
+          SiweErrorType.UNABLE_TO_PARSE,
+          'valid chain ID',
+          String(this.chainId),
+        )
       }
       if (!this.nonce) {
-        throw new SiweError(SiweErrorType.INVALID_NONCE, "alphanumeric nonce >= 8 chars", String(this.nonce));
+        throw new SiweError(
+          SiweErrorType.INVALID_NONCE,
+          'alphanumeric nonce >= 8 chars',
+          String(this.nonce),
+        )
       }
       if (!this.issuedAt) {
-        throw new SiweError(SiweErrorType.UNABLE_TO_PARSE, "valid ISO 8601 issuedAt", String(this.issuedAt));
+        throw new SiweError(
+          SiweErrorType.UNABLE_TO_PARSE,
+          'valid ISO 8601 issuedAt',
+          String(this.issuedAt),
+        )
       }
       /* the message object is valid or parsing its stringified value will throw */
-      new ParsedMessage(this.prepareMessage());
+      new ParsedMessage(this.prepareMessage())
     }
   }
 
@@ -181,48 +209,48 @@ export class SiweMessage {
     // this.validateMessage();
     const headerPrefix = this.scheme
       ? `${this.scheme}://${this.domain}`
-      : this.domain;
-    const header = `${headerPrefix} wants you to sign in with your Ethereum account:`;
-    const uriField = `URI: ${this.uri}`;
-    let prefix = [header, this.address].join("\n");
-    const versionField = `Version: ${this.version}`;
+      : this.domain
+    const header = `${headerPrefix} wants you to sign in with your Ethereum account:`
+    const uriField = `URI: ${this.uri}`
+    let prefix = [header, this.address].join('\n')
+    const versionField = `Version: ${this.version}`
 
-    const chainField = `Chain ID: ${this.chainId}`;
+    const chainField = `Chain ID: ${this.chainId}`
 
-    const nonceField = `Nonce: ${this.nonce}`;
+    const nonceField = `Nonce: ${this.nonce}`
 
-    const suffixArray = [uriField, versionField, chainField, nonceField];
+    const suffixArray = [uriField, versionField, chainField, nonceField]
 
     if (this.issuedAt) {
-      suffixArray.push(`Issued At: ${this.issuedAt}`);
+      suffixArray.push(`Issued At: ${this.issuedAt}`)
     }
 
     if (this.expirationTime) {
-      const expiryField = `Expiration Time: ${this.expirationTime}`;
+      const expiryField = `Expiration Time: ${this.expirationTime}`
 
-      suffixArray.push(expiryField);
+      suffixArray.push(expiryField)
     }
 
     if (this.notBefore) {
-      suffixArray.push(`Not Before: ${this.notBefore}`);
+      suffixArray.push(`Not Before: ${this.notBefore}`)
     }
 
     if (this.requestId !== undefined) {
-      suffixArray.push(`Request ID: ${this.requestId}`);
+      suffixArray.push(`Request ID: ${this.requestId}`)
     }
 
     if (this.resources) {
       suffixArray.push(
-        [`Resources:`, ...this.resources.map((x) => `- ${x}`)].join("\n")
-      );
+        [`Resources:`, ...this.resources.map((x) => `- ${x}`)].join('\n'),
+      )
     }
 
-    const suffix = suffixArray.join("\n");
-    prefix = [prefix, this.statement].join("\n\n");
+    const suffix = suffixArray.join('\n')
+    prefix = [prefix, this.statement].join('\n\n')
     if (this.statement !== undefined) {
-      prefix += "\n";
+      prefix += '\n'
     }
-    return [prefix, suffix].join("\n");
+    return [prefix, suffix].join('\n')
   }
 
   /**
@@ -232,19 +260,19 @@ export class SiweMessage {
    * type defined in the object.
    */
   prepareMessage(): string {
-    let message: string;
+    let message: string
     switch (this.version) {
-      case "1": {
-        message = this.toMessage();
-        break;
+      case '1': {
+        message = this.toMessage()
+        break
       }
 
       default: {
-        message = this.toMessage();
-        break;
+        message = this.toMessage()
+        break
       }
     }
-    return message;
+    return message
   }
 
   /**
@@ -254,54 +282,54 @@ export class SiweMessage {
    */
   async verify(
     params: VerifyParams,
-    opts: VerifyOpts = { suppressExceptions: false }
+    opts: VerifyOpts = { suppressExceptions: false },
   ): Promise<SiweResponse> {
     const fail = (result: SiweResponse): SiweResponse => {
       if (opts.suppressExceptions) {
-        return result;
+        return result
       }
-      throw result;
-    };
+      throw result
+    }
 
     const invalidParams = checkInvalidKeys<VerifyParams>(
       params,
-      VerifyParamsKeys
-    );
+      VerifyParamsKeys,
+    )
     if (invalidParams.length > 0) {
       return fail({
         success: false,
         data: this,
         error: new Error(
-          `${invalidParams.join(", ")} is/are not valid key(s) for VerifyParams.`
+          `${invalidParams.join(', ')} is/are not valid key(s) for VerifyParams.`,
         ),
-      });
+      })
     }
 
-    const invalidOpts = checkInvalidKeys<VerifyOpts>(opts, VerifyOptsKeys);
+    const invalidOpts = checkInvalidKeys<VerifyOpts>(opts, VerifyOptsKeys)
     if (invalidOpts.length > 0) {
       return fail({
         success: false,
         data: this,
         error: new Error(
-          `${invalidOpts.join(", ")} is/are not valid key(s) for VerifyOpts.`
+          `${invalidOpts.join(', ')} is/are not valid key(s) for VerifyOpts.`,
         ),
-      });
+      })
     }
 
     // Resolve verification config
-    let config: SiweConfig;
+    let config: SiweConfig
     try {
-      config = resolveConfig(opts);
+      config = resolveConfig(opts)
     } catch (e) {
       return fail({
         success: false,
         data: this,
         error: e,
-      });
+      })
     }
 
     const { signature, scheme, domain, nonce, uri, chainId, requestId, time } =
-      params;
+      params
 
     /** Domain is required for origin binding */
     if (!domain) {
@@ -309,7 +337,7 @@ export class SiweMessage {
         success: false,
         data: this,
         error: new SiweError(SiweErrorType.MISSING_DOMAIN),
-      });
+      })
     }
 
     /** Nonce is required for replay resistance */
@@ -318,7 +346,7 @@ export class SiweMessage {
         success: false,
         data: this,
         error: new SiweError(SiweErrorType.MISSING_NONCE),
-      });
+      })
     }
 
     /** Strict mode: also require uri and chainId */
@@ -328,14 +356,14 @@ export class SiweMessage {
           success: false,
           data: this,
           error: new SiweError(SiweErrorType.MISSING_URI),
-        });
+        })
       }
       if (chainId == null) {
         return fail({
           success: false,
           data: this,
           error: new SiweError(SiweErrorType.MISSING_CHAIN_ID),
-        });
+        })
       }
     }
 
@@ -347,9 +375,9 @@ export class SiweMessage {
         error: new SiweError(
           SiweErrorType.SCHEME_MISMATCH,
           scheme,
-          this.scheme
+          this.scheme,
         ),
-      });
+      })
     }
 
     /** Domain binding */
@@ -360,9 +388,9 @@ export class SiweMessage {
         error: new SiweError(
           SiweErrorType.DOMAIN_MISMATCH,
           domain,
-          this.domain
+          this.domain,
         ),
-      });
+      })
     }
 
     /** Nonce binding */
@@ -371,7 +399,7 @@ export class SiweMessage {
         success: false,
         data: this,
         error: new SiweError(SiweErrorType.NONCE_MISMATCH, nonce, this.nonce),
-      });
+      })
     }
 
     /** URI binding */
@@ -380,7 +408,7 @@ export class SiweMessage {
         success: false,
         data: this,
         error: new SiweError(SiweErrorType.URI_MISMATCH, uri, this.uri),
-      });
+      })
     }
 
     /** Chain binding */
@@ -391,9 +419,9 @@ export class SiweMessage {
         error: new SiweError(
           SiweErrorType.CHAIN_ID_MISMATCH,
           String(chainId),
-          String(this.chainId)
+          String(this.chainId),
         ),
-      });
+      })
     }
 
     /** Request ID binding */
@@ -404,13 +432,13 @@ export class SiweMessage {
         error: new SiweError(
           SiweErrorType.REQUEST_ID_MISMATCH,
           requestId,
-          this.requestId
+          this.requestId,
         ),
-      });
+      })
     }
 
     /** Check time or now */
-    const checkTime = new Date(time || new Date());
+    const checkTime = new Date(time || new Date())
 
     /** Reject invalid time values that would silently disable temporal checks */
     if (isNaN(checkTime.getTime())) {
@@ -420,14 +448,14 @@ export class SiweMessage {
         error: new SiweError(
           SiweErrorType.INVALID_TIME_FORMAT,
           'valid ISO 8601 datetime',
-          String(time)
+          String(time),
         ),
-      });
+      })
     }
 
     /** Message not expired */
     if (this.expirationTime) {
-      const expirationDate = new Date(this.expirationTime);
+      const expirationDate = new Date(this.expirationTime)
       if (checkTime.getTime() >= expirationDate.getTime()) {
         return fail({
           success: false,
@@ -435,15 +463,15 @@ export class SiweMessage {
           error: new SiweError(
             SiweErrorType.EXPIRED_MESSAGE,
             `${checkTime.toISOString()} < ${expirationDate.toISOString()}`,
-            `${checkTime.toISOString()} >= ${expirationDate.toISOString()}`
+            `${checkTime.toISOString()} >= ${expirationDate.toISOString()}`,
           ),
-        });
+        })
       }
     }
 
     /** Message is valid already */
     if (this.notBefore) {
-      const notBefore = new Date(this.notBefore);
+      const notBefore = new Date(this.notBefore)
       if (checkTime.getTime() < notBefore.getTime()) {
         return fail({
           success: false,
@@ -451,41 +479,37 @@ export class SiweMessage {
           error: new SiweError(
             SiweErrorType.NOT_YET_VALID_MESSAGE,
             `${checkTime.toISOString()} >= ${notBefore.toISOString()}`,
-            `${checkTime.toISOString()} < ${notBefore.toISOString()}`
+            `${checkTime.toISOString()} < ${notBefore.toISOString()}`,
           ),
-        });
+        })
       }
     }
 
-    let EIP4361Message: string;
+    let EIP4361Message: string
     try {
-      EIP4361Message = this.prepareMessage();
+      EIP4361Message = this.prepareMessage()
     } catch (e) {
       return fail({
         success: false,
         data: this,
         error: e,
-      });
+      })
     }
 
     /** Recover address from signature */
-    let addr: string | undefined;
+    let addr: string | undefined
     try {
-      addr = await config.verifyMessage(EIP4361Message, signature);
+      addr = await config.verifyMessage(EIP4361Message, signature)
     } catch {
       // verifyMessage throws on malformed signatures — fall through to INVALID_SIGNATURE
     }
 
     /** Match signature with message's address */
     if (addr === this.address) {
-      return { success: true, data: this };
+      return { success: true, data: this }
     }
 
-    const EIP1271Promise = checkContractWalletSignature(
-      this,
-      signature,
-      config
-    )
+    const EIP1271Promise = checkContractWalletSignature(this, signature, config)
       .then((isValid): SiweResponse => {
         if (!isValid) {
           return {
@@ -494,11 +518,11 @@ export class SiweMessage {
             error: new SiweError(
               SiweErrorType.INVALID_SIGNATURE,
               addr,
-              `Resolved address to be ${this.address}`
+              `Resolved address to be ${this.address}`,
             ),
-          };
+          }
         }
-        return { success: true, data: this };
+        return { success: true, data: this }
       })
       .catch((error): SiweResponse => {
         if (error instanceof ChainIdMismatchError) {
@@ -508,12 +532,12 @@ export class SiweMessage {
             error: new SiweError(
               SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
               String(this.chainId),
-              error.message
+              error.message,
             ),
-          };
+          }
         }
-        return { success: false, data: this, error };
-      });
+        return { success: false, data: this, error }
+      })
 
     const [EIP1271Response, fallbackResponse] = await Promise.all([
       EIP1271Promise,
@@ -521,17 +545,17 @@ export class SiweMessage {
         ?.verificationFallback?.(params, opts, this, EIP1271Promise)
         ?.then((res) => res)
         ?.catch((res: SiweResponse) => res),
-    ]);
+    ])
 
     if (fallbackResponse) {
       if (fallbackResponse.success) {
-        return fallbackResponse;
+        return fallbackResponse
       }
-      return fail(fallbackResponse);
+      return fail(fallbackResponse)
     }
     if (EIP1271Response.success) {
-      return EIP1271Response;
+      return EIP1271Response
     }
-    return fail(EIP1271Response);
+    return fail(EIP1271Response)
   }
 }

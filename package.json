@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r run build",
+    "format": "prettier --write 'packages/**/*.{ts,tsx,js,jsx,vue,json,css,scss,html}'",
+    "format:check": "prettier --check 'packages/**/*.{ts,tsx,js,jsx,vue,json,css,scss,html}'",
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
     "changeset": "changeset",

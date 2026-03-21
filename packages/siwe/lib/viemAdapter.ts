@@ -1,6 +1,6 @@
-import { EIP1271_MAGICVALUE } from './config';
-import type { SiweConfig } from './config';
-import { ChainIdMismatchError } from './utils';
+import { EIP1271_MAGICVALUE } from './config'
+import type { SiweConfig } from './config'
+import { ChainIdMismatchError } from './utils'
 
 const EIP1271_ABI = [
   {
@@ -13,16 +13,16 @@ const EIP1271_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
-] as const;
+] as const
 
 export interface ViemConfigOpts {
   /** viem PublicClient for EIP-1271 smart contract wallet verification */
   publicClient?: {
-    readContract: (args: any) => Promise<any>;
+    readContract: (args: any) => Promise<any>
     chain?: {
-      id: number;
-    };
-  };
+      id: number
+    }
+  }
 }
 
 /**
@@ -39,14 +39,16 @@ export interface ViemConfigOpts {
  * configure(await createViemConfig({ publicClient }));
  * ```
  */
-export async function createViemConfig(opts?: ViemConfigOpts): Promise<SiweConfig> {
-  let viem: any;
+export async function createViemConfig(
+  opts?: ViemConfigOpts,
+): Promise<SiweConfig> {
+  let viem: any
   try {
-    viem = await import('viem');
+    viem = await import('viem')
   } catch {
     throw new Error(
-      'viem is required for createViemConfig. Install it with: npm install viem'
-    );
+      'viem is required for createViemConfig. Install it with: npm install viem',
+    )
   }
 
   const config: SiweConfig = {
@@ -54,49 +56,46 @@ export async function createViemConfig(opts?: ViemConfigOpts): Promise<SiweConfi
       return viem.recoverMessageAddress({
         message,
         signature: signature as `0x${string}`,
-      });
+      })
     },
     hashMessage: (message: string) => {
-      return viem.hashMessage(message);
+      return viem.hashMessage(message)
     },
     getAddress: (address: string) => {
-      return viem.getAddress(address);
+      return viem.getAddress(address)
     },
-  };
+  }
 
   if (opts?.publicClient) {
-    const publicClient = opts.publicClient;
+    const publicClient = opts.publicClient
     config.checkContractWalletSignature = async (
       address: string,
       message: string,
       signature: string,
-      chainId: number
+      chainId: number,
     ) => {
-      const clientChainId = publicClient.chain?.id;
+      const clientChainId = publicClient.chain?.id
       if (clientChainId == null) {
         throw new ChainIdMismatchError(
-          'EIP-1271 verification requires a viem publicClient with chain.id.'
-        );
+          'EIP-1271 verification requires a viem publicClient with chain.id.',
+        )
       }
       if (clientChainId !== chainId) {
         throw new ChainIdMismatchError(
-          `publicClient chainId ${clientChainId} does not match message chainId ${chainId}.`
-        );
+          `publicClient chainId ${clientChainId} does not match message chainId ${chainId}.`,
+        )
       }
 
-      const hashedMessage = viem.hashMessage(message);
+      const hashedMessage = viem.hashMessage(message)
       const result = await publicClient.readContract({
         address: address as `0x${string}`,
         abi: EIP1271_ABI,
         functionName: 'isValidSignature',
-        args: [
-          hashedMessage as `0x${string}`,
-          signature as `0x${string}`,
-        ],
-      });
-      return result === EIP1271_MAGICVALUE;
-    };
+        args: [hashedMessage as `0x${string}`, signature as `0x${string}`],
+      })
+      return result === EIP1271_MAGICVALUE
+    }
   }
 
-  return config;
+  return config
 }

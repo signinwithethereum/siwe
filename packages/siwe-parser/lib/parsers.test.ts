@@ -1,37 +1,37 @@
-import { ParsedMessage } from "./parsers";
-import { readFileSync } from "fs";
+import { ParsedMessage } from './parsers'
+import { readFileSync } from 'fs'
 
 const parsingPositive: object = JSON.parse(
-  readFileSync("../../test/parsing_positive.json", "utf8")
-);
+  readFileSync('../../test/parsing_positive.json', 'utf8'),
+)
 const parsingNegative: object = JSON.parse(
-  readFileSync("../../test/parsing_negative.json", "utf8")
-);
+  readFileSync('../../test/parsing_negative.json', 'utf8'),
+)
 
 //
-describe("Successfully parses with ABNF Client", () => {
+describe('Successfully parses with ABNF Client', () => {
   test.concurrent.each(Object.entries(parsingPositive))(
-    "Parses message successfully: %s",
+    'Parses message successfully: %s',
     (test_name, test) => {
-      const parsedMessage = new ParsedMessage(test.message);
+      const parsedMessage = new ParsedMessage(test.message)
       for (const [field, value] of Object.entries(test.fields)) {
         if (value === null) {
-          expect(parsedMessage[field]).toBeUndefined();
-        } else if (typeof value === "object") {
-          expect(parsedMessage[field]).toStrictEqual(value);
+          expect(parsedMessage[field]).toBeUndefined()
+        } else if (typeof value === 'object') {
+          expect(parsedMessage[field]).toStrictEqual(value)
         } else {
-          expect(parsedMessage[field]).toBe(value);
+          expect(parsedMessage[field]).toBe(value)
         }
       }
-    }
-  );
-});
+    },
+  )
+})
 
-describe("Successfully fails with ABNF Client", () => {
+describe('Successfully fails with ABNF Client', () => {
   test.concurrent.each(Object.entries(parsingNegative))(
-    "Fails to parse message: %s",
+    'Fails to parse message: %s',
     (test_name, test) => {
-      expect(() => new ParsedMessage(test)).toThrow();
-    }
-  );
-});
+      expect(() => new ParsedMessage(test)).toThrow()
+    },
+  )
+})

@@ -1,8 +1,8 @@
-import { randomStringForEntropy } from '@stablelib/random';
-import { isValidISO8601Date } from '@signinwithethereum/siwe-parser';
+import { randomStringForEntropy } from '@stablelib/random'
+import { isValidISO8601Date } from '@signinwithethereum/siwe-parser'
 
-import type { SiweMessage } from './client';
-import type { SiweConfig } from './config';
+import type { SiweMessage } from './client'
+import type { SiweConfig } from './config'
 
 /**
  * This method calls the EIP-1271 method for Smart Contract wallets
@@ -15,19 +15,19 @@ import type { SiweConfig } from './config';
 export const checkContractWalletSignature = async (
   message: SiweMessage,
   signature: string,
-  config?: SiweConfig
+  config?: SiweConfig,
 ): Promise<boolean> => {
   if (!config?.checkContractWalletSignature) {
-    return false;
+    return false
   }
 
   return config.checkContractWalletSignature(
     message.address,
     message.prepareMessage(),
     signature,
-    message.chainId
-  );
-};
+    message.chainId,
+  )
+}
 
 /**
  * This method leverages a native CSPRNG with support for both browser and Node.js
@@ -41,14 +41,14 @@ export const checkContractWalletSignature = async (
  * an alphanumeric character set.
  */
 export const generateNonce = (): string => {
-  const nonce = randomStringForEntropy(96);
+  const nonce = randomStringForEntropy(96)
   if (!nonce || nonce.length < 8) {
-    throw new Error('Error during nonce creation.');
+    throw new Error('Error during nonce creation.')
   }
-  return nonce;
-};
+  return nonce
+}
 
-export { isValidISO8601Date };
+export { isValidISO8601Date }
 
 /**
  * Thrown by adapter chain-ID validation so the caller can match
@@ -56,20 +56,17 @@ export { isValidISO8601Date };
  */
 export class ChainIdMismatchError extends Error {
   constructor(message: string) {
-    super(message);
-    this.name = 'ChainIdMismatchError';
+    super(message)
+    this.name = 'ChainIdMismatchError'
   }
 }
 
-export const checkInvalidKeys = <T>(
-  obj: T,
-  keys: (keyof T)[]
-): (keyof T)[] => {
-  const invalidKeys: (keyof T)[] = [];
-  Object.keys(obj).forEach(key => {
+export const checkInvalidKeys = <T>(obj: T, keys: (keyof T)[]): (keyof T)[] => {
+  const invalidKeys: (keyof T)[] = []
+  Object.keys(obj).forEach((key) => {
     if (!keys.includes(key as keyof T)) {
-      invalidKeys.push(key as keyof T);
+      invalidKeys.push(key as keyof T)
     }
-  });
-  return invalidKeys;
-};
+  })
+  return invalidKeys
+}

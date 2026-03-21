@@ -1,30 +1,30 @@
-import type { SiweConfig } from './config';
-import { SiweMessage } from './client';
+import type { SiweConfig } from './config'
+import { SiweMessage } from './client'
 
 export interface VerifyParams {
   /** Signature of the message signed by the wallet */
-  signature: string;
+  signature: string
 
   /** RFC 3986 URI scheme for the authority that is requesting the signing. */
-  scheme?: string;
+  scheme?: string
 
   /** RFC 4501 dns authority that is requesting the signing. Required for origin binding. */
-  domain: string;
+  domain: string
 
   /** Randomized token used to prevent replay attacks, at least 8 alphanumeric characters. Required for replay resistance. */
-  nonce: string;
+  nonce: string
 
   /** RFC 3986 URI referring to the resource that is the subject of the signing. */
-  uri?: string;
+  uri?: string
 
   /** EIP-155 Chain ID to which the session is bound. */
-  chainId?: number;
+  chainId?: number
 
   /** System-specific identifier referring to the sign-in request. */
-  requestId?: string;
+  requestId?: string
 
   /**ISO 8601 datetime string of the current time. */
-  time?: string;
+  time?: string
 }
 
 export const VerifyParamsKeys: (keyof VerifyParams)[] = [
@@ -36,38 +36,38 @@ export const VerifyParamsKeys: (keyof VerifyParams)[] = [
   'chainId',
   'requestId',
   'time',
-];
+]
 
 export interface VerifyOpts {
   /**
    * @deprecated Use `config` with a SiweConfig that includes EIP-1271 support instead.
    * ethers provider for EIP-1271 validation.
    */
-  provider?: any;
+  provider?: any
 
   /**
    * Verification config providing crypto functions.
    * If not set, falls back to the global config (set via `configure()`),
    * then auto-detects ethers if installed.
    */
-  config?: SiweConfig;
+  config?: SiweConfig
 
   /** If the library should reject promises on errors, defaults to false */
-  suppressExceptions?: boolean;
+  suppressExceptions?: boolean
 
   /** Enables a custom verification function that will be ran alongside EIP-1271 check. */
   verificationFallback?: (
     params: VerifyParams,
     opts: VerifyOpts,
     message: SiweMessage,
-    EIP1271Promise: Promise<SiweResponse>
-  ) => Promise<SiweResponse>;
+    EIP1271Promise: Promise<SiweResponse>,
+  ) => Promise<SiweResponse>
 
   /**
    * When true, requires uri and chainId in addition to the always-required
    * domain and nonce. Use this to enforce full contextual binding.
    */
-  strict?: boolean;
+  strict?: boolean
 }
 
 export const VerifyOptsKeys: (keyof VerifyOpts)[] = [
@@ -76,20 +76,20 @@ export const VerifyOptsKeys: (keyof VerifyOpts)[] = [
   'suppressExceptions',
   'verificationFallback',
   'strict',
-];
+]
 
 /**
  * Returned on verifications.
  */
 export interface SiweResponse {
   /** Boolean representing if the message was verified with success. */
-  success: boolean;
+  success: boolean
 
   /** If present `success` MUST be false and will provide extra information on the failure reason. */
-  error?: SiweError | Error;
+  error?: SiweError | Error
 
   /** Original message that was verified. */
-  data: SiweMessage;
+  data: SiweMessage
 }
 
 /**
@@ -99,21 +99,21 @@ export class SiweError {
   constructor(
     type: SiweErrorType | string,
     expected?: string,
-    received?: string
+    received?: string,
   ) {
-    this.type = type;
-    this.expected = expected;
-    this.received = received;
+    this.type = type
+    this.expected = expected
+    this.received = received
   }
 
   /** Type of the error. */
-  type: SiweErrorType | string;
+  type: SiweErrorType | string
 
   /** Expected value or condition to pass. */
-  expected?: string;
+  expected?: string
 
   /** Received value that caused the failure. */
-  received?: string;
+  received?: string
 }
 
 /**

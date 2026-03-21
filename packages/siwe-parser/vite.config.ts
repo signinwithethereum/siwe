@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import dts from 'vite-plugin-dts';
-import { resolve } from 'path';
+import { defineConfig } from 'vite'
+import dts from 'vite-plugin-dts'
+import { resolve } from 'path'
 
 export default defineConfig({
   build: {
@@ -13,12 +13,10 @@ export default defineConfig({
       external: [/^apg-js/, /^@noble\/hashes/],
     },
   },
-  plugins: [
-    dts({ rollupTypes: true }),
-  ],
+  plugins: [dts({ rollupTypes: true })],
   test: {
     globals: true,
     environment: 'node',
     include: ['lib/**/*.test.ts'],
   },
-});
+})

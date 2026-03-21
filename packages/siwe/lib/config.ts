@@ -1,5 +1,5 @@
 /** EIP-1271 magic value returned by isValidSignature for valid signatures */
-export const EIP1271_MAGICVALUE = '0x1626ba7e';
+export const EIP1271_MAGICVALUE = '0x1626ba7e'
 
 /**
  * Provider-agnostic configuration for SIWE verification.
@@ -9,14 +9,14 @@ export interface SiweConfig {
   /** Recover the signer address from an EIP-191 signed message */
   verifyMessage: (
     message: string,
-    signature: string
-  ) => string | Promise<string>;
+    signature: string,
+  ) => string | Promise<string>
 
   /** Hash a message per EIP-191 personal_sign */
-  hashMessage: (message: string) => string;
+  hashMessage: (message: string) => string
 
   /** Normalize an address to EIP-55 checksum format */
-  getAddress: (address: string) => string;
+  getAddress: (address: string) => string
 
   /**
    * Check EIP-1271 smart contract wallet signature.
@@ -29,11 +29,11 @@ export interface SiweConfig {
     address: string,
     message: string,
     signature: string,
-    chainId: number
-  ) => Promise<boolean>;
+    chainId: number,
+  ) => Promise<boolean>
 }
 
-let globalConfig: SiweConfig | null = null;
+let globalConfig: SiweConfig | null = null
 
 /**
  * Set the global SIWE verification config.
@@ -51,10 +51,10 @@ let globalConfig: SiweConfig | null = null;
  * ```
  */
 export function configure(config: SiweConfig): void {
-  globalConfig = config;
+  globalConfig = config
 }
 
 /** Get the current global config, or null if not set. */
 export function getGlobalConfig(): SiweConfig | null {
-  return globalConfig;
+  return globalConfig
 }
