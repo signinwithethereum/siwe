@@ -9,15 +9,15 @@ Ethereum-based authentication, and provide wallet vendors a consistent
 machine-readable message format to achieve improved user experiences and
 consent management.
 
-## Quickstart Examples
-
-To try it out locally, check out these examples:
-
--   [Node](https://github.com/spruceid/siwe-quickstart/tree/main/00_print)
--   [Frontend](https://github.com/spruceid/siwe-quickstart/tree/main/01_frontend)
--   [Backend](https://github.com/spruceid/siwe-quickstart/tree/main/02_backend)
--   [End to end](https://github.com/spruceid/siwe-quickstart/tree/main/03_complete_app)
--   [Sign In with Ethereum Notepad](https://github.com/spruceid/siwe-notepad)
+<!-- ## Quickstart Examples -->
+<!---->
+<!-- To try it out locally, check out these examples: -->
+<!---->
+<!-- -   [Node](https://github.com/signinwithethereum/siwe-quickstart/tree/main/00_print) -->
+<!-- -   [Frontend](https://github.com/signinwithethereum/siwe-quickstart/tree/main/01_frontend) -->
+<!-- -   [Backend](https://github.com/signinwithethereum/siwe-quickstart/tree/main/02_backend) -->
+<!-- -   [End to end](https://github.com/signinwithethereum/siwe-quickstart/tree/main/03_complete_app) -->
+<!-- -   [Sign In with Ethereum Notepad](https://github.com/signinwithethereum/siwe-notepad) -->
 
 ## Motivation
 
@@ -35,12 +35,6 @@ opportunity to standardize the sign-in workflow and improve interoperability
 across existing services, while also providing wallet vendors a reliable method
 to identify signing requests as Sign In with Ethereum requests for improved UX.
 
-This work is sponsored by the Ethereum Foundation and Ethereum Name Service
-(ENS). It is being developed in the open through a series of recorded community
-calls and public repositories, and its development is informed by over twenty
-user interviews with a focus on currently-in-production uses, related prior
-EIPs, and fits within product roadmaps.
-
 ## Specification
 
 Specification can be found [here](https://eips.ethereum.org/EIPS/eip-4361).
@@ -53,7 +47,7 @@ of this implementation.
 
 ## Mono Repo Install and Build
 
-Run `npm install` to install dependencies, then `npm run build` to build the library.
-Development can occur on the `package/*` level with tests being run on each package itself.
+Run `pnpm install` to install dependencies, then `pnpm run build` to build the library.
+Development can occur on the `packages/*` level with tests being run on each package itself.
 
-To run all tests: `npm run test`
+To run all tests: `pnpm run test`
