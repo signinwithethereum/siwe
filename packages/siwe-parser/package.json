@@ -40,7 +40,7 @@
   "homepage": "https://github.com/signinwithethereum/siwe",
   "license": "Apache-2.0",
   "dependencies": {
-    "@noble/hashes": "^1.1.2",
+    "@noble/hashes": "^1.7.0",
     "apg-js": "^4.4.0"
   },
   "repository": {

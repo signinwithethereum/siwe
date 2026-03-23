@@ -60,23 +60,23 @@ importers:
         specifier: workspace:^
         version: link:../siwe-parser
       ethers:
-        specifier: ^5.6.8 || ^6.0.8
+        specifier: ^5.7.0 || ^6.13.0
         version: 6.16.0
     devDependencies:
       ethers5:
-        specifier: npm:ethers@^5.6.8
+        specifier: npm:ethers@^5.7.0
         version: ethers@5.8.0
       ethers6:
-        specifier: npm:ethers@^6.0.8
+        specifier: npm:ethers@^6.13.0
         version: ethers@6.16.0
       viem:
-        specifier: ^2.0.0
+        specifier: ^2.7.0
         version: 2.47.5(typescript@5.9.3)
 
   packages/siwe-parser:
     dependencies:
       '@noble/hashes':
-        specifier: ^1.1.2
+        specifier: ^1.7.0
         version: 1.8.0
       apg-js:
         specifier: ^4.4.0
