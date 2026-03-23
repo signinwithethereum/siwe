@@ -492,7 +492,7 @@ describe('ethers adapter EIP-6492 support', () => {
       // ethers Contract internally uses provider.call for readContract,
       // so we capture the call data to verify it's NOT the EIP-6492 validator
       call: async (tx: any) => {
-        callDataUsed = typeof tx === 'string' ? tx : tx?.data ?? null
+        callDataUsed = typeof tx === 'string' ? tx : (tx?.data ?? null)
         // Return ERC-1271 magic value (0x1626ba7e, left-padded to 32 bytes)
         return '0x1626ba7e00000000000000000000000000000000000000000000000000000000'
       },

@@ -17,6 +17,8 @@ export const EIP6492_VALIDATOR_BYTECODE =
 
 /** Check if a hex-encoded signature ends with the EIP-6492 magic suffix */
 export function isEIP6492Signature(signature: string): boolean {
-  const len = signature.startsWith('0x') ? signature.length - 2 : signature.length
+  const len = signature.startsWith('0x')
+    ? signature.length - 2
+    : signature.length
   return len >= 64 && signature.endsWith(EIP6492_MAGIC_SUFFIX)
 }

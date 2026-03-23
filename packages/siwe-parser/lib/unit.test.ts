@@ -143,9 +143,7 @@ describe('Prototype pollution does not break parsing (issue #185)', () => {
     try {
       const parsed = new ParsedMessage(sampleMessage)
       expect(parsed.domain).toBe('service.example.com')
-      expect(parsed.address).toBe(
-        '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-      )
+      expect(parsed.address).toBe('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
     } finally {
       delete (Array.prototype as any).__siwe_test_prop__
     }

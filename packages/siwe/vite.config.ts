@@ -9,11 +9,7 @@ export default defineConfig({
       fileName: (format) => `siwe.${format === 'es' ? 'mjs' : 'cjs'}`,
     },
     rollupOptions: {
-      external: [
-        '@signinwithethereum/siwe-parser',
-        'ethers',
-        'viem',
-      ],
+      external: ['@signinwithethereum/siwe-parser', 'ethers', 'viem'],
     },
   },
   plugins: [dts({ rollupTypes: true })],
