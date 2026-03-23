@@ -1,5 +1,11 @@
 # @signinwithethereum/siwe-parser
 
+## 4.0.1
+
+### Patch Changes
+
+- [`a0d0277`](https://github.com/signinwithethereum/siwe/commit/a0d027736a7149555d8fb12242394af2e66ab983) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Add readme
+
 ## 4.0.0
 
 ### Major Changes
