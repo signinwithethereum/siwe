@@ -1,6 +1,12 @@
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 import { Wallet } from 'ethers'
 import { SiweMessage } from './client'
-import { EIP6492_MAGIC_SUFFIX, isEIP6492Signature } from './eip6492'
+import {
+  EIP6492_MAGIC_SUFFIX,
+  EIP6492_VALIDATOR_BYTECODE,
+  isEIP6492Signature,
+} from './eip6492'
 import { createEthersConfig } from './ethersCompat'
 import { SiweErrorType } from './types'
 import { generateNonce } from './utils'
@@ -190,6 +196,22 @@ describe('isEIP6492Signature', () => {
   test('handles missing 0x prefix', () => {
     const sig = 'ab'.repeat(32) + EIP6492_MAGIC_SUFFIX
     expect(isEIP6492Signature(sig)).toBe(true)
+  })
+})
+
+describe('EIP6492_VALIDATOR_BYTECODE integrity', () => {
+  test('matches viem erc6492SignatureValidatorByteCode', () => {
+    // Find the viem contracts file in node_modules
+    const viemContractsPath = resolve(
+      require.resolve('viem/package.json'),
+      '../constants/contracts.ts',
+    )
+    const source = readFileSync(viemContractsPath, 'utf8')
+    const match = source.match(
+      /erc6492SignatureValidatorByteCode\s*=\s*'(0x[0-9a-f]+)'/,
+    )
+    expect(match).not.toBeNull()
+    expect(EIP6492_VALIDATOR_BYTECODE).toBe(match![1])
   })
 })
 
@@ -404,6 +426,49 @@ describe('ethers adapter EIP-6492 support', () => {
     const mockProvider = {
       getNetwork: async () => ({ chainId: 1n }),
       call: async () => '0x00', // invalid
+    }
+    const config = createEthersConfig(mockProvider)
+
+    const wallet = Wallet.createRandom()
+    const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+    const msg = createTestMessage(contractAddr)
+    const baseSig = await wallet.signMessage(msg.toMessage())
+    const eip6492Sig = baseSig + EIP6492_MAGIC_SUFFIX
+
+    const result = await msg.verify(
+      { signature: eip6492Sig, domain: msg.domain, nonce: msg.nonce },
+      { config, suppressExceptions: true },
+    )
+    expect(result.success).toBe(false)
+  })
+
+  test('accepts zero-padded 32-byte provider response', async () => {
+    const mockProvider = {
+      getNetwork: async () => ({ chainId: 1n }),
+      // Some nodes return padded 32-byte results from eth_call
+      call: async () =>
+        '0x0000000000000000000000000000000000000000000000000000000000000001',
+    }
+    const config = createEthersConfig(mockProvider)
+
+    const wallet = Wallet.createRandom()
+    const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+    const msg = createTestMessage(contractAddr)
+    const baseSig = await wallet.signMessage(msg.toMessage())
+    const eip6492Sig = baseSig + EIP6492_MAGIC_SUFFIX
+
+    const result = await msg.verify(
+      { signature: eip6492Sig, domain: msg.domain, nonce: msg.nonce },
+      { config },
+    )
+    expect(result.success).toBe(true)
+  })
+
+  test('rejects zero-padded 32-byte invalid response', async () => {
+    const mockProvider = {
+      getNetwork: async () => ({ chainId: 1n }),
+      call: async () =>
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
     }
     const config = createEthersConfig(mockProvider)
 
