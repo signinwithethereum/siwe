@@ -32,6 +32,9 @@ export class ParsedMessage {
   // and display it on an HTML page.
   constructor(msg: string) {
     const parser = new apgLib.parser()
+    // Use a null-prototype object instead of the default array to prevent
+    // prototype pollution from breaking for...in iteration in apg-js.
+    parser.callbacks = Object.create(null)
     parser.callbacks['sign-in-with-ethereum'] = cb.signInWithEtherium
     parser.callbacks['oscheme'] = cb.oscheme
     parser.callbacks['domain'] = cb.domain
@@ -130,6 +133,8 @@ export class ParsedMessage {
 
 export const isUri = (uri: string) => {
   const parser = new apgLib.parser()
+  // Use a null-prototype object to prevent prototype pollution.
+  parser.callbacks = Object.create(null)
   parser.callbacks['IP-literal'] = cb.ipLiteral
   parser.callbacks['IPv4address'] = cb.ipv4
   parser.callbacks['nodcolon'] = cb.nodcolon

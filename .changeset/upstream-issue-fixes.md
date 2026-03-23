@@ -1,5 +1,6 @@
 ---
 '@signinwithethereum/siwe': patch
+'@signinwithethereum/siwe-parser': patch
 ---
 
 Fixes for issues reported on the upstream spruceid/siwe repository:
@@ -13,4 +14,5 @@ Fixes for issues reported on the upstream spruceid/siwe repository:
 - **spruceid/siwe#106**: Drop keccak library that uses `Buffer` — fixed by using `@noble/hashes` instead
 - **spruceid/siwe#81**: Support ethers v6 upgrade path — fixed with both v5 and v6 supported via auto-detection
 - **spruceid/siwe#165**: `Buffer.decode` undefined in React Native — fixed by eliminating all `Buffer` usage in favor of `@noble/hashes`
+- **spruceid/siwe#185**: Fix `siwe-parser` crashes on iOS due to `Array.prototype` pollution.
 - **spruceid/siwe#180**: Allow simpler configuration of provider config via plain RPC URL.

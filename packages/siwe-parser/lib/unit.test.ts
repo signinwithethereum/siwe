@@ -114,3 +114,40 @@ describe('Statement, request-id & resources may be present, empty or missing.', 
     }
   })
 })
+
+// Regression test for https://github.com/spruceid/siwe/issues/185
+// apg-js uses `for...in` on the callbacks array, which picks up
+// enumerable properties added to Array.prototype by polyfills.
+describe('Prototype pollution does not break parsing (issue #185)', () => {
+  const sampleMessage = [
+    'service.example.com wants you to sign in with your Ethereum account:',
+    '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    '',
+    'I accept the ServiceOrg Terms of Service: https://service.example.com/tos',
+    '',
+    'URI: https://service.example.com/login',
+    'Version: 1',
+    'Chain ID: 1',
+    'Nonce: 32891757',
+    'Issued At: 2021-09-30T16:25:24.000Z',
+  ].join('\n')
+
+  test('survives enumerable Array.prototype additions', () => {
+    // Simulate a polyfill adding an enumerable property to Array.prototype
+    // (e.g. core-js polyfilling Array.prototype.at on iOS 14)
+    Object.defineProperty(Array.prototype, '__siwe_test_prop__', {
+      value: () => {},
+      enumerable: true,
+      configurable: true,
+    })
+    try {
+      const parsed = new ParsedMessage(sampleMessage)
+      expect(parsed.domain).toBe('service.example.com')
+      expect(parsed.address).toBe(
+        '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      )
+    } finally {
+      delete (Array.prototype as any).__siwe_test_prop__
+    }
+  })
+})
