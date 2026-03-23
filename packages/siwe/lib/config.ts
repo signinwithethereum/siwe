@@ -58,3 +58,51 @@ export function configure(config: SiweConfig): void {
 export function getGlobalConfig(): SiweConfig | null {
   return globalConfig
 }
+
+/**
+ * Create a SiweConfig from a plain RPC URL.
+ * Auto-detects whether viem or ethers is installed and creates
+ * the appropriate config with full EIP-1271 support.
+ *
+ * @param rpcUrl - JSON-RPC endpoint URL (e.g. 'https://eth.llamarpc.com')
+ *
+ * @example
+ * ```ts
+ * import { createConfig, configure } from '@signinwithethereum/siwe';
+ *
+ * configure(await createConfig('https://eth.llamarpc.com'));
+ * ```
+ */
+export async function createConfig(rpcUrl: string): Promise<SiweConfig> {
+  // Try viem
+  try {
+    const viem = await import('viem')
+    const { createViemConfig } = await import('./viemAdapter')
+    const publicClient = viem.createPublicClient({
+      transport: viem.http(rpcUrl),
+    })
+    return createViemConfig({ publicClient })
+  } catch {
+    // viem not available
+  }
+
+  // Fall back to ethers
+  try {
+    const { ethers } = await import('ethers')
+    const { createEthersConfig } = await import('./ethersCompat')
+    let provider: any
+    if (ethers.JsonRpcProvider) {
+      provider = new ethers.JsonRpcProvider(rpcUrl) // v6
+    } else {
+      // @ts-expect-error -- ethers v5 API
+      provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+    }
+    return createEthersConfig(provider)
+  } catch {
+    // ethers not available
+  }
+
+  throw new Error(
+    'createConfig requires viem or ethers. Install one with: npm install viem',
+  )
+}

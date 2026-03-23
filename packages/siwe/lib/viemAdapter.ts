@@ -19,6 +19,7 @@ export interface ViemConfigOpts {
   /** viem PublicClient for EIP-1271 smart contract wallet verification */
   publicClient?: {
     readContract: (args: any) => Promise<any>
+    getChainId?: () => Promise<number>
     chain?: {
       id: number
     }
@@ -74,10 +75,13 @@ export async function createViemConfig(
       signature: string,
       chainId: number,
     ) => {
-      const clientChainId = publicClient.chain?.id
+      let clientChainId = publicClient.chain?.id
+      if (clientChainId == null && publicClient.getChainId) {
+        clientChainId = await publicClient.getChainId()
+      }
       if (clientChainId == null) {
         throw new ChainIdMismatchError(
-          'EIP-1271 verification requires a viem publicClient with chain.id.',
+          'EIP-1271 verification requires a viem publicClient with chain.id or getChainId().',
         )
       }
       if (clientChainId !== chainId) {
