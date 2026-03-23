@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22, 24]
+        node-version: [lts/*, latest]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
