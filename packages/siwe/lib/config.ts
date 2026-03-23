@@ -90,7 +90,7 @@ export async function createConfig(rpcUrl: string): Promise<SiweConfig> {
   try {
     const { ethers } = await import('ethers')
     const { createEthersConfig } = await import('./ethersCompat')
-    let provider: any
+    let provider: unknown
     if (ethers.JsonRpcProvider) {
       provider = new ethers.JsonRpcProvider(rpcUrl) // v6
     } else {
