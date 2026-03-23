@@ -16,3 +16,4 @@ Fixes for issues reported on the upstream spruceid/siwe repository:
 - **spruceid/siwe#165**: `Buffer.decode` undefined in React Native — fixed by eliminating all `Buffer` usage in favor of `@noble/hashes`
 - **spruceid/siwe#185**: Fix `siwe-parser` crashes on iOS due to `Array.prototype` pollution.
 - **spruceid/siwe#180**: Allow simpler configuration of provider config via plain RPC URL.
+- **spruceid/siwe#148**: Add EIP-6492 support for pre-deployed smart contract wallets (ERC-4337). Viem adapter uses `publicClient.verifyMessage` for native support; ethers adapter uses the UniversalSigValidator bytecode via `eth_call`.

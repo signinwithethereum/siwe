@@ -16,9 +16,15 @@ const EIP1271_ABI = [
 ] as const
 
 export interface ViemConfigOpts {
-  /** viem PublicClient for EIP-1271 smart contract wallet verification */
+  /**
+   * viem PublicClient for smart contract wallet verification.
+   * If `verifyMessage` is available (viem v2+), EIP-6492 signatures
+   * from pre-deployed ERC-4337 wallets are automatically supported.
+   * Otherwise, falls back to ERC-1271 only via `readContract`.
+   */
   publicClient?: {
     readContract: (args: any) => Promise<any>
+    verifyMessage?: (args: any) => Promise<boolean>
     getChainId?: () => Promise<number>
     chain?: {
       id: number
@@ -81,7 +87,7 @@ export async function createViemConfig(
       }
       if (clientChainId == null) {
         throw new ChainIdMismatchError(
-          'EIP-1271 verification requires a viem publicClient with chain.id or getChainId().',
+          'EIP-1271/EIP-6492 verification requires a viem publicClient with chain.id or getChainId().',
         )
       }
       if (clientChainId !== chainId) {
@@ -90,6 +96,16 @@ export async function createViemConfig(
         )
       }
 
+      // Use verifyMessage for combined ERC-1271 + EIP-6492 support (viem v2+)
+      if (publicClient.verifyMessage) {
+        return publicClient.verifyMessage({
+          address: address as `0x${string}`,
+          message,
+          signature: signature as `0x${string}`,
+        })
+      }
+
+      // Fall back to ERC-1271 only (no EIP-6492 support)
       const hashedMessage = viem.hashMessage(message)
       const result = await publicClient.readContract({
         address: address as `0x${string}`,

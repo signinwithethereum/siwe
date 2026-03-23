@@ -1,6 +1,7 @@
 import { ethers } from 'ethers'
 import { EIP1271_MAGICVALUE } from './config'
 import type { SiweConfig } from './config'
+import { isEIP6492Signature, EIP6492_VALIDATOR_BYTECODE } from './eip6492'
 import { ChainIdMismatchError } from './utils'
 
 type Ethers6BigNumberish = string | number | bigint
@@ -37,6 +38,7 @@ const EIP1271_ABI = [
 let ethersVerifyMessage = null
 let ethersHashMessage = null
 let ethersGetAddress = null
+let ethersAbiEncode: (types: string[], values: any[]) => string = null
 
 try {
   // @ts-expect-error -- v6 compatibility hack
@@ -45,6 +47,9 @@ try {
   ethersHashMessage = ethers.utils.hashMessage
   // @ts-expect-error -- v6 compatibility hack
   ethersGetAddress = ethers.utils.getAddress
+  ethersAbiEncode = (types: string[], values: any[]) =>
+    // @ts-expect-error -- v6 compatibility hack
+    ethers.utils.defaultAbiCoder.encode(types, values)
 } catch {
   ethersVerifyMessage = ethers.verifyMessage as (
     message: Uint8Array | string,
@@ -56,6 +61,9 @@ try {
   ) => string
 
   ethersGetAddress = ethers.getAddress as (address: string) => string
+
+  ethersAbiEncode = (types: string[], values: any[]) =>
+    new ethers.AbiCoder().encode(types, values)
 }
 
 // @ts-expect-error -- v6 compatibility hack
@@ -107,7 +115,7 @@ export function createEthersConfig(provider?: any): SiweConfig {
     ) => {
       if (typeof provider.getNetwork !== 'function') {
         throw new ChainIdMismatchError(
-          'EIP-1271 verification requires a provider with getNetwork() support.',
+          'EIP-1271/EIP-6492 verification requires a provider with getNetwork() support.',
         )
       }
 
@@ -117,6 +125,17 @@ export function createEthersConfig(provider?: any): SiweConfig {
         throw new ChainIdMismatchError(
           `Provider chainId ${providerChainId} does not match message chainId ${chainId}.`,
         )
+      }
+
+      if (isEIP6492Signature(signature)) {
+        const hashedMessage = ethersHashMessage(message)
+        const encoded = ethersAbiEncode(
+          ['address', 'bytes32', 'bytes'],
+          [address, hashedMessage, signature],
+        )
+        const data = EIP6492_VALIDATOR_BYTECODE + encoded.slice(2)
+        const result = await provider.call({ data })
+        return Number.parseInt(result, 16) === 1
       }
 
       const walletContract = new EthersContract(address, EIP1271_ABI, provider)
