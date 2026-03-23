@@ -63,6 +63,10 @@ isValidISO8601Date('2024-01-01T00:00:00Z') // true
 | `requestId` | `string` | No |
 | `resources` | `string[]` | No |
 
+## Related
+
+For full SIWE message creation, signing, and verification (including ERC-1271 and EIP-6492 support), use [`@signinwithethereum/siwe`](https://www.npmjs.com/package/@signinwithethereum/siwe) which includes this parser.
+
 ## Disclaimer
 
 Our TypeScript library for Sign In with Ethereum has not yet undergone a formal security

@@ -1,58 +1,186 @@
-![Sign In with Ethereum logo](https://siwe.xyz/favicon.png 'Sign In with Ethereum logo')
+# @signinwithethereum/siwe
 
-Sign In with Ethereum describes how Ethereum accounts authenticate with
-off-chain services by signing a standard message format parameterized by scope,
-session details, and security mechanisms (e.g., a nonce). The goals of this
-specification are to provide a self-custodied alternative to centralized
-identity providers, improve interoperability across off-chain services for
-Ethereum-based authentication, and provide wallet vendors a consistent
-machine-readable message format to achieve improved user experiences and
-consent management.
+TypeScript implementation of [Sign In with Ethereum](https://eips.ethereum.org/EIPS/eip-4361) (EIP-4361). Create, parse, and verify SIWE messages with support for EOA, ERC-1271 (smart contract wallets), and EIP-6492 (pre-deployed wallets).
 
-## Quickstart Examples
+Works with **viem** or **ethers** (v5/v6).
 
-To try it out locally, check out these examples:
+## Install
 
--   [Node](https://github.com/signinwithethereum/siwe-quickstart/tree/main/00_print)
--   [Frontend](https://github.com/signinwithethereum/siwe-quickstart/tree/main/01_frontend)
--   [Backend](https://github.com/signinwithethereum/siwe-quickstart/tree/main/02_backend)
--   [End to end](https://github.com/signinwithethereum/siwe-quickstart/tree/main/03_complete_app)
--   [Sign In with Ethereum Notepad](https://github.com/signinwithethereum/siwe-notepad)
+```bash
+npm install @signinwithethereum/siwe
+```
 
-## Motivation
+Install a peer dependency (at least one required):
 
-When signing in to popular non-blockchain services today, users will typically
-use identity providers (IdPs) that are centralized entities with ultimate
-control over users' identifiers, for example, large internet companies and email
-providers. Incentives are often misaligned between these parties. Sign-In with
-Ethereum offers a new self-custodial option for users who wish to assume more
-control and responsibility over their own digital identity.
+```bash
+npm install viem    # recommended
+# or
+npm install ethers  # v5 or v6
+```
 
-Already, many services support workflows to authenticate Ethereum accounts using
-message signing, such as to establish a cookie-based web session which can
-manage privileged metadata about the authenticating address. This is an
-opportunity to standardize the sign-in workflow and improve interoperability
-across existing services, while also providing wallet vendors a reliable method
-to identify signing requests as Sign In with Ethereum requests for improved UX.
+## Quick Start
 
-This work is sponsored by the Ethereum Foundation and Ethereum Name Service
-(ENS). It is being developed in the open through a series of recorded community
-calls and public repositories, and its development is informed by over twenty
-user interviews with a focus on currently-in-production uses, related prior
-EIPs, and fits within product roadmaps.
+```ts
+import { SiweMessage, configure, createConfig } from '@signinwithethereum/siwe'
 
-## Specification
+// One-time setup — auto-detects viem or ethers
+configure(await createConfig('https://eth.llamarpc.com'))
 
-Specification can be found [here](https://eips.ethereum.org/EIPS/eip-4361).
+// Create a message
+const message = new SiweMessage({
+  domain: 'example.com',
+  address: '0x...',
+  statement: 'Sign in to Example',
+  uri: 'https://example.com',
+  version: '1',
+  chainId: 1,
+  nonce: 'abc12345defg78901',
+  issuedAt: new Date().toISOString(),
+})
 
-## Disclaimer
+// Get the EIP-4361 string to sign
+const messageString = message.prepareMessage()
 
-Our TypeScript library for Sign In with Ethereum has not yet undergone a formal security
-audit. We welcome continued feedback on the usability, architecture, and security
-of this implementation.
+// Verify a signature (after signing on the client)
+const { success, data, error } = await message.verify(
+  { signature, domain: 'example.com', nonce: message.nonce },
+  { suppressExceptions: true },
+)
+```
 
-## Mono Repo Install and Build
+## Configuration
 
-Run `npm install` to install dependencies, then `npm bootstrap` to link the dependencies
-in their respective packages. Afteward run `npm run build` to build the library.
-Development can occur on the `package/*` level with tests being run on each package itself.
+You must configure a verification backend before calling `verify()`. There are three approaches:
+
+### `createConfig(rpcUrl)` — auto-detect
+
+Detects whether viem or ethers is installed and creates the appropriate config with full EIP-1271 support.
+
+```ts
+import { configure, createConfig } from '@signinwithethereum/siwe'
+
+configure(await createConfig('https://eth.llamarpc.com'))
+```
+
+### `createViemConfig(opts)` — viem
+
+```ts
+import { configure, createViemConfig } from '@signinwithethereum/siwe'
+import { createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+
+const publicClient = createPublicClient({ chain: mainnet, transport: http() })
+configure(await createViemConfig({ publicClient }))
+```
+
+### `createEthersConfig(provider)` — ethers
+
+```ts
+import { configure, createEthersConfig } from '@signinwithethereum/siwe'
+import { ethers } from 'ethers'
+
+const provider = new ethers.JsonRpcProvider('https://eth.llamarpc.com')
+configure(createEthersConfig(provider))
+```
+
+### Per-call config
+
+Instead of setting a global config, you can pass `config` in verify options:
+
+```ts
+const config = await createViemConfig({ publicClient })
+await message.verify({ signature, domain, nonce }, { config })
+```
+
+## API
+
+### `SiweMessage`
+
+Create from an object or parse from an EIP-4361 string:
+
+```ts
+// From object
+const msg = new SiweMessage({ domain, address, uri, version, chainId, nonce, issuedAt })
+
+// From EIP-4361 string
+const msg = new SiweMessage(rawMessageString)
+```
+
+**Fields:** `domain`, `address`, `uri`, `version`, `chainId`, `nonce`, `issuedAt` (required) and `scheme`, `statement`, `expirationTime`, `notBefore`, `requestId`, `resources` (optional).
+
+#### `prepareMessage(): string`
+
+Returns the EIP-4361 formatted message string, ready for EIP-191 signing.
+
+#### `verify(params, opts?): Promise<SiweResponse>`
+
+Verifies a signed message. Returns `{ success, data, error }`.
+
+**`params` (VerifyParams):**
+
+| Field | Required | Description |
+|---|---|---|
+| `signature` | yes | The wallet signature |
+| `domain` | yes | Expected domain (origin binding) |
+| `nonce` | yes | Expected nonce (replay protection) |
+| `scheme` | no | Expected URI scheme |
+| `uri` | no | Expected URI (required in strict mode) |
+| `chainId` | no | Expected chain ID (required in strict mode) |
+| `requestId` | no | Expected request ID |
+| `time` | no | ISO 8601 time to check against (defaults to now) |
+
+**`opts` (VerifyOpts):**
+
+| Field | Description |
+|---|---|
+| `config` | Per-call `SiweConfig` (overrides global) |
+| `suppressExceptions` | Return errors in response instead of throwing (default: `false`) |
+| `strict` | Require `uri` and `chainId` in params |
+| `verificationFallback` | Custom verification function run alongside EIP-1271 |
+
+### `generateNonce(): string`
+
+Returns a cryptographically secure random nonce (96 bits of entropy, alphanumeric).
+
+```ts
+import { generateNonce } from '@signinwithethereum/siwe'
+
+const nonce = generateNonce()
+```
+
+### `SiweConfig`
+
+Interface for bringing your own verification backend:
+
+```ts
+interface SiweConfig {
+  verifyMessage: (message: string, signature: string) => string | Promise<string>
+  hashMessage: (message: string) => string
+  getAddress: (address: string) => string
+  checkContractWalletSignature?: (
+    address: string, message: string, signature: string, chainId: number,
+  ) => Promise<boolean>
+}
+```
+
+### EIP-6492 Utilities
+
+```ts
+import { isEIP6492Signature, EIP6492_MAGIC_SUFFIX } from '@signinwithethereum/siwe'
+
+if (isEIP6492Signature(sig)) {
+  // Signature is from a pre-deployed smart contract wallet
+}
+```
+
+### Error Handling
+
+`SiweError` includes `type`, `expected`, and `received` fields. Error types are defined in the `SiweErrorType` enum covering domain/nonce/signature mismatches, expiration, and parsing failures.
+
+## Related
+
+The ABNF parser is available as a standalone package at [`@signinwithethereum/siwe-parser`](https://www.npmjs.com/package/@signinwithethereum/siwe-parser) for projects that only need message parsing without verification.
+
+## License
+
+Apache-2.0
