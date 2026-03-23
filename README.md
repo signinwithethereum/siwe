@@ -1,6 +1,6 @@
-![Sign In with Ethereum logo](https://raw.githubusercontent.com/signinwithethereum/siwe/main/assets/og.png 'Sign In with Ethereum')
+![Sign in with Ethereum logo](https://raw.githubusercontent.com/signinwithethereum/siwe/main/assets/og.png 'Sign in with Ethereum')
 
-Sign In with Ethereum (SIWE) describes how Ethereum accounts authenticate with
+Sign in with Ethereum (SIWE) describes how Ethereum accounts authenticate with
 off-chain services by signing a standard message format parameterized by scope,
 session details, and security mechanisms (e.g., a nonce). The goals of this
 specification are to provide a self-custodied alternative to centralized
@@ -17,7 +17,7 @@ consent management.
 <!-- -   [Frontend](https://github.com/signinwithethereum/siwe-quickstart/tree/main/01_frontend) -->
 <!-- -   [Backend](https://github.com/signinwithethereum/siwe-quickstart/tree/main/02_backend) -->
 <!-- -   [End to end](https://github.com/signinwithethereum/siwe-quickstart/tree/main/03_complete_app) -->
-<!-- -   [Sign In with Ethereum Notepad](https://github.com/signinwithethereum/siwe-notepad) -->
+<!-- -   [Sign in with Ethereum Notepad](https://github.com/signinwithethereum/siwe-notepad) -->
 
 ## Motivation
 
@@ -33,7 +33,7 @@ message signing, such as to establish a cookie-based web session which can
 manage privileged metadata about the authenticating address. This is an
 opportunity to standardize the sign-in workflow and improve interoperability
 across existing services, while also providing wallet vendors a reliable method
-to identify signing requests as Sign In with Ethereum requests for improved UX.
+to identify signing requests as Sign in with Ethereum requests for improved UX.
 
 ## Specification
 
@@ -41,7 +41,7 @@ Specification can be found [here](/packages/spec/erc-4361.md).
 
 ## Disclaimer
 
-Our TypeScript library for Sign In with Ethereum has not yet undergone a formal security
+Our TypeScript library for Sign in with Ethereum has not yet undergone a formal security
 audit. We welcome continued feedback on the usability, architecture, and security
 of this implementation.
 

@@ -1,6 +1,6 @@
 # @signinwithethereum/siwe
 
-TypeScript implementation of [Sign In with Ethereum](https://eips.ethereum.org/EIPS/eip-4361) (EIP-4361). Create, parse, and verify SIWE messages with support for EOA, ERC-1271 (smart contract wallets), and EIP-6492 (pre-deployed wallets).
+TypeScript implementation of [Sign in with Ethereum](https://eips.ethereum.org/EIPS/eip-4361) (EIP-4361). Create, parse, and verify SIWE messages with support for EOA, ERC-1271 (smart contract wallets), and EIP-6492 (pre-deployed wallets).
 
 Works with **viem** or **ethers** (v5/v6).
 

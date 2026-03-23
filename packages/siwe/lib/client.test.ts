@@ -224,7 +224,7 @@ describe(`Unit`, () => {
     const msg = new SiweMessage({
       address: wallet.address,
       domain: 'siwe.xyz',
-      statement: 'Sign In with Ethereum Example Statement',
+      statement: 'Sign in with Ethereum Example Statement',
       uri: 'https://siwe.xyz',
       version: '1',
       nonce: 'bTyXgcQxn2htgkjJn',
@@ -246,7 +246,7 @@ describe(`Unit`, () => {
     const msg = new SiweMessage({
       address: wallet.address,
       domain: 'siwe.xyz',
-      statement: 'Sign In with Ethereum Example Statement',
+      statement: 'Sign in with Ethereum Example Statement',
       uri: 'https://siwe.xyz',
       version: '1',
       nonce: 'bTyXgcQxn2htgkjJn',
@@ -275,7 +275,7 @@ describe(`Unit`, () => {
     const msg = new SiweMessage({
       address: wallet.address,
       domain: 'siwe.xyz',
-      statement: 'Sign In with Ethereum Example Statement',
+      statement: 'Sign in with Ethereum Example Statement',
       uri: 'https://siwe.xyz',
       version: '1',
       nonce: 'bTyXgcQxn2htgkjJn',
@@ -304,7 +304,7 @@ describe('Error type specificity', () => {
     const msg = new SiweMessage({
       address: wallet.address,
       domain: 'siwe.xyz',
-      statement: 'Sign In with Ethereum Example Statement',
+      statement: 'Sign in with Ethereum Example Statement',
       uri: 'https://siwe.xyz/login',
       version: '1',
       nonce: 'bTyXgcQxn2htgkjJn',
@@ -477,7 +477,7 @@ describe('Error type specificity', () => {
     const msg = new SiweMessage({
       address: wallet.address,
       domain: 'siwe.xyz',
-      statement: 'Sign In with Ethereum Example Statement',
+      statement: 'Sign in with Ethereum Example Statement',
       uri: 'https://siwe.xyz',
       version: '1',
       nonce: 'bTyXgcQxn2htgkjJn',

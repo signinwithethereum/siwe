@@ -103,7 +103,7 @@ export class SiweMessage {
   resources?: string[]
 
   /**
-   * Creates a parsed Sign In with Ethereum Message (EIP-4361) object from a
+   * Creates a parsed Sign in with Ethereum Message (EIP-4361) object from a
    * string or an object. If a string is used an ABNF parser is called to
    * validate the parameter, otherwise the fields are attributed.
    * @param param {string | SiweMessage} Sign message as a string or an object.
