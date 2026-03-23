@@ -134,8 +134,10 @@ export function createEthersConfig(provider?: any): SiweConfig {
           [address, hashedMessage, signature],
         )
         const data = EIP6492_VALIDATOR_BYTECODE + encoded.slice(2)
-        const result = await provider.call({ data })
-        return Number.parseInt(result, 16) === 1
+        const result: string = await provider.call({ data })
+        // Validator returns 0x01 (valid) or 0x00 (invalid), possibly zero-padded to 32 bytes
+        const hex = result.replace(/^0x0*/, '') || '0'
+        return hex === '1'
       }
 
       const walletContract = new EthersContract(address, EIP1271_ABI, provider)
