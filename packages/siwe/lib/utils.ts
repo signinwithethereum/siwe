@@ -1,4 +1,3 @@
-import { randomStringForEntropy } from '@stablelib/random'
 import { isValidISO8601Date } from '@signinwithethereum/siwe-parser'
 
 import type { SiweMessage } from './client'
@@ -29,6 +28,9 @@ export const checkContractWalletSignature = async (
   )
 }
 
+const ALPHANUMERIC =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
 /**
  * This method leverages a native CSPRNG with support for both browser and Node.js
  * environments in order generate a cryptographically secure nonce for use in the
@@ -41,7 +43,15 @@ export const checkContractWalletSignature = async (
  * an alphanumeric character set.
  */
 export const generateNonce = (): string => {
-  const nonce = randomStringForEntropy(96)
+  // 96 bits of entropy with alphanumeric charset (62 chars, ~5.95 bits/char)
+  // requires ceil(96 / log2(62)) = 17 characters
+  const LENGTH = 17
+  const bytes = new Uint8Array(LENGTH)
+  crypto.getRandomValues(bytes)
+  let nonce = ''
+  for (let i = 0; i < LENGTH; i++) {
+    nonce += ALPHANUMERIC[bytes[i] % ALPHANUMERIC.length]
+  }
   if (!nonce || nonce.length < 8) {
     throw new Error('Error during nonce creation.')
   }

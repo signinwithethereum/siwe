@@ -37,7 +37,6 @@
   ],
   "homepage": "https://github.com/signinwithethereum/siwe",
   "dependencies": {
-    "@stablelib/random": "^1.0.1",
     "@signinwithethereum/siwe-parser": "workspace:^"
   },
   "devDependencies": {
