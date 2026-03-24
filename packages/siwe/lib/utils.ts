@@ -73,6 +73,7 @@ export class ChainIdMismatchError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'ChainIdMismatchError'
+    Object.setPrototypeOf(this, ChainIdMismatchError.prototype)
   }
 }
 
