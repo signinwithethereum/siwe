@@ -68,9 +68,7 @@ function loadEthers(): Promise<EthersHelpers | null> {
  * configure(await createEthersConfig(provider));
  * ```
  */
-export async function createEthersConfig(
-  provider?: any,
-): Promise<SiweConfig> {
+export async function createEthersConfig(provider?: any): Promise<SiweConfig> {
   const helpers = await loadEthers()
   if (!helpers) {
     throw new Error(
