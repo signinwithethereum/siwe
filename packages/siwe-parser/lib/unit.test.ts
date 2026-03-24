@@ -1,5 +1,5 @@
 import { ParsedMessage } from './parsers'
-import apgLib from 'apg-js/src/apg-lib/node-exports'
+import apgLib from 'apg-js/src/apg-lib/node-exports.js'
 import { grammar } from './siwe-grammar'
 import { readFileSync } from 'fs'
 

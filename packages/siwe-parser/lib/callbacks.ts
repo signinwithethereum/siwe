@@ -1,4 +1,4 @@
-import apgLib from 'apg-js/src/apg-lib/node-exports'
+import apgLib from 'apg-js/src/apg-lib/node-exports.js'
 const utils = apgLib.utils
 const id = apgLib.ids
 import { isEIP55Address, isValidISO8601Date, parseIntegerNumber } from './utils'

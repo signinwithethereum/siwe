@@ -1,6 +1,6 @@
 import { grammar } from './siwe-grammar'
 import { cb } from './callbacks'
-import apgLib from 'apg-js/src/apg-lib/node-exports'
+import apgLib from 'apg-js/src/apg-lib/node-exports.js'
 const grammarObj = new grammar()
 
 export * from './utils'
