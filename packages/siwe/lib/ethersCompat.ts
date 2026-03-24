@@ -15,48 +15,42 @@ interface EthersHelpers {
   Contract: any
 }
 
-// undefined = not yet tried, null = ethers not available
-let _cached: EthersHelpers | null | undefined
+let _pending: Promise<EthersHelpers | null>
 
-async function loadEthers(): Promise<EthersHelpers | null> {
-  if (_cached !== undefined) return _cached
+function loadEthers(): Promise<EthersHelpers | null> {
+  if (!_pending) {
+    _pending = (async () => {
+      try {
+        const { ethers } = await import('ethers')
+        const utils = (ethers as any).utils
 
-  try {
-    const { ethers } = await import('ethers')
+        if (utils?.verifyMessage) {
+          // ethers v5
+          return {
+            verifyMessage: utils.verifyMessage,
+            hashMessage: utils.hashMessage,
+            getAddress: utils.getAddress,
+            abiEncode: (types: string[], values: any[]) =>
+              utils.defaultAbiCoder.encode(types, values),
+            Contract: ethers.Contract,
+          } satisfies EthersHelpers
+        }
 
-    let verifyMessage: any
-    let hashMessage: any
-    let getAddress: any
-    let abiEncode: (types: string[], values: any[]) => string
-
-    try {
-      // ethers v5
-      verifyMessage = (ethers as any).utils.verifyMessage
-      hashMessage = (ethers as any).utils.hashMessage
-      getAddress = (ethers as any).utils.getAddress
-      abiEncode = (types: string[], values: any[]) =>
-        (ethers as any).utils.defaultAbiCoder.encode(types, values)
-    } catch {
-      // ethers v6
-      verifyMessage = ethers.verifyMessage
-      hashMessage = ethers.hashMessage
-      getAddress = ethers.getAddress
-      abiEncode = (types: string[], values: any[]) =>
-        new (ethers as any).AbiCoder().encode(types, values)
-    }
-
-    _cached = {
-      verifyMessage,
-      hashMessage,
-      getAddress,
-      abiEncode,
-      Contract: ethers.Contract,
-    }
-  } catch {
-    _cached = null
+        // ethers v6
+        return {
+          verifyMessage: ethers.verifyMessage,
+          hashMessage: ethers.hashMessage,
+          getAddress: ethers.getAddress,
+          abiEncode: (types: string[], values: any[]) =>
+            new (ethers as any).AbiCoder().encode(types, values),
+          Contract: ethers.Contract,
+        } satisfies EthersHelpers
+      } catch {
+        return null
+      }
+    })()
   }
-
-  return _cached
+  return _pending
 }
 
 /**
