@@ -1,82 +1,63 @@
-import { ethers } from 'ethers'
 import { EIP1271_MAGICVALUE } from './config'
 import type { SiweConfig } from './config'
 import { isEIP6492Signature, EIP6492_VALIDATOR_BYTECODE } from './eip6492'
 import { ChainIdMismatchError } from './utils'
 
-type Ethers6BigNumberish = string | number | bigint
-
-// NB: This compatibility type omits the `Signature` class defined in ethers v6;
-// however, a `Signature` instance is compatible with the object type defined.
-type Ethers6SignatureLike =
-  | string
-  | {
-      r: string
-      s: string
-      v: Ethers6BigNumberish
-      yParity?: 0 | 1
-      yParityAndS?: string
-    }
-  | {
-      r: string
-      yParityAndS: string
-      yParity?: 0 | 1
-      s?: string
-      v?: number
-    }
-  | {
-      r: string
-      s: string
-      yParity: 0 | 1
-      v?: Ethers6BigNumberish
-      yParityAndS?: string
-    }
-
 const EIP1271_ABI = [
   'function isValidSignature(bytes32 _message, bytes _signature) public view returns (bytes4)',
 ]
-let ethersVerifyMessage = null
-let ethersHashMessage = null
-let ethersGetAddress = null
-let ethersAbiEncode: (types: string[], values: any[]) => string = null
 
-try {
-  // @ts-expect-error -- v6 compatibility hack
-  ethersVerifyMessage = ethers.utils.verifyMessage
-  // @ts-expect-error -- v6 compatibility hack
-  ethersHashMessage = ethers.utils.hashMessage
-  // @ts-expect-error -- v6 compatibility hack
-  ethersGetAddress = ethers.utils.getAddress
-  ethersAbiEncode = (types: string[], values: any[]) =>
-    // @ts-expect-error -- v6 compatibility hack
-    ethers.utils.defaultAbiCoder.encode(types, values)
-} catch {
-  ethersVerifyMessage = ethers.verifyMessage as (
-    message: Uint8Array | string,
-    sig: Ethers6SignatureLike,
-  ) => string
-
-  ethersHashMessage = ethers.hashMessage as (
-    message: Uint8Array | string,
-  ) => string
-
-  ethersGetAddress = ethers.getAddress as (address: string) => string
-
-  ethersAbiEncode = (types: string[], values: any[]) =>
-    new ethers.AbiCoder().encode(types, values)
+interface EthersHelpers {
+  verifyMessage: (message: string, signature: any) => string
+  hashMessage: (message: string) => string
+  getAddress: (address: string) => string
+  abiEncode: (types: string[], values: any[]) => string
+  Contract: any
 }
 
-// @ts-expect-error -- v6 compatibility hack
-type ProviderV5 = ethers.providers.Provider
-type ProviderV6 = ethers.Provider
+// undefined = not yet tried, null = ethers not available
+let _cached: EthersHelpers | null | undefined
 
-/** @deprecated Use SiweConfig instead */
-export type Provider = ProviderV6 extends undefined ? ProviderV5 : ProviderV6
-export const verifyMessage = ethersVerifyMessage
-export const hashMessage = ethersHashMessage
-export const getAddress = ethersGetAddress
+async function loadEthers(): Promise<EthersHelpers | null> {
+  if (_cached !== undefined) return _cached
 
-const EthersContract = ethers.Contract
+  try {
+    const { ethers } = await import('ethers')
+
+    let verifyMessage: any
+    let hashMessage: any
+    let getAddress: any
+    let abiEncode: (types: string[], values: any[]) => string
+
+    try {
+      // ethers v5
+      verifyMessage = (ethers as any).utils.verifyMessage
+      hashMessage = (ethers as any).utils.hashMessage
+      getAddress = (ethers as any).utils.getAddress
+      abiEncode = (types: string[], values: any[]) =>
+        (ethers as any).utils.defaultAbiCoder.encode(types, values)
+    } catch {
+      // ethers v6
+      verifyMessage = ethers.verifyMessage
+      hashMessage = ethers.hashMessage
+      getAddress = ethers.getAddress
+      abiEncode = (types: string[], values: any[]) =>
+        new (ethers as any).AbiCoder().encode(types, values)
+    }
+
+    _cached = {
+      verifyMessage,
+      hashMessage,
+      getAddress,
+      abiEncode,
+      Contract: ethers.Contract,
+    }
+  } catch {
+    _cached = null
+  }
+
+  return _cached
+}
 
 /**
  * Create a SiweConfig using ethers.js (v5 or v6).
@@ -86,27 +67,30 @@ const EthersContract = ethers.Contract
  *
  * @example
  * ```ts
- * import { createEthersConfig, configure } from '@signinwithethereum/ts';
+ * import { createEthersConfig, configure } from '@signinwithethereum/siwe';
  * import { ethers } from 'ethers';
  *
  * const provider = new ethers.JsonRpcProvider('https://...');
- * configure(createEthersConfig(provider));
+ * configure(await createEthersConfig(provider));
  * ```
  */
-export function createEthersConfig(provider?: any): SiweConfig {
-  if (!ethersVerifyMessage) {
+export async function createEthersConfig(
+  provider?: any,
+): Promise<SiweConfig> {
+  const helpers = await loadEthers()
+  if (!helpers) {
     throw new Error(
       'ethers is required for createEthersConfig. Install it with: npm install ethers',
     )
   }
 
   const config: SiweConfig = {
-    verifyMessage: ethersVerifyMessage,
-    hashMessage: ethersHashMessage,
-    getAddress: ethersGetAddress,
+    verifyMessage: helpers.verifyMessage,
+    hashMessage: helpers.hashMessage,
+    getAddress: helpers.getAddress,
   }
 
-  if (provider && EthersContract) {
+  if (provider && helpers.Contract) {
     config.checkContractWalletSignature = async (
       address: string,
       message: string,
@@ -128,8 +112,8 @@ export function createEthersConfig(provider?: any): SiweConfig {
       }
 
       if (isEIP6492Signature(signature)) {
-        const hashedMessage = ethersHashMessage(message)
-        const encoded = ethersAbiEncode(
+        const hashedMessage = helpers.hashMessage(message)
+        const encoded = helpers.abiEncode(
           ['address', 'bytes32', 'bytes'],
           [address, hashedMessage, signature],
         )
@@ -140,8 +124,12 @@ export function createEthersConfig(provider?: any): SiweConfig {
         return hex === '1'
       }
 
-      const walletContract = new EthersContract(address, EIP1271_ABI, provider)
-      const hashedMessage = ethersHashMessage(message)
+      const walletContract = new helpers.Contract(
+        address,
+        EIP1271_ABI,
+        provider,
+      )
+      const hashedMessage = helpers.hashMessage(message)
       const res = await walletContract.isValidSignature(
         hashedMessage,
         signature,
@@ -160,11 +148,14 @@ let cachedDefaultConfig: SiweConfig | null = null
  * Returns null if ethers is not available.
  * Memoizes the no-provider case to avoid allocation per verify() call.
  */
-export function tryAutoDetectEthers(provider?: any): SiweConfig | null {
-  if (!ethersVerifyMessage) return null
+export async function tryAutoDetectEthers(
+  provider?: any,
+): Promise<SiweConfig | null> {
+  const helpers = await loadEthers()
+  if (!helpers) return null
   if (!provider) {
     if (!cachedDefaultConfig) {
-      cachedDefaultConfig = createEthersConfig()
+      cachedDefaultConfig = await createEthersConfig()
     }
     return cachedDefaultConfig
   }

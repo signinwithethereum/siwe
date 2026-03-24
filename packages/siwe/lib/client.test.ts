@@ -570,7 +570,7 @@ describe('Error type specificity', () => {
   test('EIP1271 rejects provider chain mismatch', async () => {
     const testFields = (EIP1271 as any).argent
     const msg = new SiweMessage(testFields.message)
-    const config = createEthersConfig({
+    const config = await createEthersConfig({
       getNetwork: async () => ({ chainId: 5 }),
     })
     const result = await msg.verify(
@@ -586,7 +586,7 @@ describe('Error type specificity', () => {
   test('EIP1271 rejects provider without getNetwork support', async () => {
     const testFields = (EIP1271 as any).argent
     const msg = new SiweMessage(testFields.message)
-    const config = createEthersConfig({})
+    const config = await createEthersConfig({})
     const result = await msg.verify(
       { signature: testFields.signature, domain: msg.domain, nonce: msg.nonce },
       {

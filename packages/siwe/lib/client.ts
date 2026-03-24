@@ -25,7 +25,7 @@ import {
  * Resolve the SiweConfig to use for verification.
  * Priority: opts.config > global config > auto-detect ethers (with opts.provider for backward compat).
  */
-function resolveConfig(opts: VerifyOpts): SiweConfig {
+async function resolveConfig(opts: VerifyOpts): Promise<SiweConfig> {
   if (opts.config) {
     return opts.config
   }
@@ -37,7 +37,7 @@ function resolveConfig(opts: VerifyOpts): SiweConfig {
     // If a legacy provider was passed alongside global config, create an ethers
     // config with that provider for EIP-1271 support
     if (provider && !global.checkContractWalletSignature) {
-      const ethersConfig = tryAutoDetectEthers(provider)
+      const ethersConfig = await tryAutoDetectEthers(provider)
       if (ethersConfig) {
         return {
           ...global,
@@ -50,7 +50,7 @@ function resolveConfig(opts: VerifyOpts): SiweConfig {
   }
 
   // Backward compat: auto-detect ethers
-  const ethersConfig = tryAutoDetectEthers(provider)
+  const ethersConfig = await tryAutoDetectEthers(provider)
   if (ethersConfig) {
     return ethersConfig
   }
@@ -319,7 +319,7 @@ export class SiweMessage {
     // Resolve verification config
     let config: SiweConfig
     try {
-      config = resolveConfig(opts)
+      config = await resolveConfig(opts)
     } catch (e) {
       return fail({
         success: false,

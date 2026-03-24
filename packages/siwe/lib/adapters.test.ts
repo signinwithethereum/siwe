@@ -42,7 +42,7 @@ describe('generateNonce', () => {
 describe('Round-trip verification with ethers config', () => {
   test('sign and verify succeeds', async () => {
     const wallet = Wallet.createRandom()
-    const config = createEthersConfig()
+    const config = await createEthersConfig()
     const msg = createTestMessage(wallet.address)
     const signature = await wallet.signMessage(msg.toMessage())
     const result = await msg.verify(
@@ -55,7 +55,7 @@ describe('Round-trip verification with ethers config', () => {
   test('wrong signer fails verification', async () => {
     const wallet = Wallet.createRandom()
     const other = Wallet.createRandom()
-    const config = createEthersConfig()
+    const config = await createEthersConfig()
     const msg = createTestMessage(wallet.address)
     const signature = await other.signMessage(msg.toMessage())
     const result = await msg.verify(
@@ -404,7 +404,7 @@ describe('ethers adapter EIP-6492 support', () => {
         return '0x01' // valid
       },
     }
-    const config = createEthersConfig(mockProvider)
+    const config = await createEthersConfig(mockProvider)
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -427,7 +427,7 @@ describe('ethers adapter EIP-6492 support', () => {
       getNetwork: async () => ({ chainId: 1n }),
       call: async () => '0x00', // invalid
     }
-    const config = createEthersConfig(mockProvider)
+    const config = await createEthersConfig(mockProvider)
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -449,7 +449,7 @@ describe('ethers adapter EIP-6492 support', () => {
       call: async () =>
         '0x0000000000000000000000000000000000000000000000000000000000000001',
     }
-    const config = createEthersConfig(mockProvider)
+    const config = await createEthersConfig(mockProvider)
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -470,7 +470,7 @@ describe('ethers adapter EIP-6492 support', () => {
       call: async () =>
         '0x0000000000000000000000000000000000000000000000000000000000000000',
     }
-    const config = createEthersConfig(mockProvider)
+    const config = await createEthersConfig(mockProvider)
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -497,7 +497,7 @@ describe('ethers adapter EIP-6492 support', () => {
         return '0x1626ba7e00000000000000000000000000000000000000000000000000000000'
       },
     }
-    const config = createEthersConfig(mockProvider)
+    const config = await createEthersConfig(mockProvider)
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -523,7 +523,7 @@ describe('ethers adapter EIP-6492 support', () => {
         return '0x01'
       },
     }
-    const config = createEthersConfig(mockProvider)
+    const config = await createEthersConfig(mockProvider)
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -549,7 +549,7 @@ describe('ethers adapter EIP-6492 support', () => {
         throw new Error('eth_call reverted')
       },
     }
-    const config = createEthersConfig(mockProvider)
+    const config = await createEthersConfig(mockProvider)
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -571,7 +571,7 @@ describe('ethers adapter EIP-6492 support', () => {
       getNetwork: async () => ({ chainId: 1n }),
       call: async () => '0x',
     }
-    const config = createEthersConfig(mockProvider)
+    const config = await createEthersConfig(mockProvider)
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -587,7 +587,7 @@ describe('ethers adapter EIP-6492 support', () => {
   })
 
   test('EIP-6492 sig without provider fails as INVALID_SIGNATURE', async () => {
-    const config = createEthersConfig() // no provider
+    const config = await createEthersConfig() // no provider
 
     const wallet = Wallet.createRandom()
     const contractAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
