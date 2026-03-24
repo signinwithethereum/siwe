@@ -131,9 +131,7 @@ describe('viem adapter getChainId fallback', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect(result.error.type).toBe(
-      SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
-    )
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE_CHAIN_ID)
   })
 
   test('EIP-1271 rejects when neither chain.id nor getChainId is available', async () => {
@@ -152,9 +150,7 @@ describe('viem adapter getChainId fallback', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect(result.error.type).toBe(
-      SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
-    )
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE_CHAIN_ID)
   })
 
   test('EIP-1271 prefers chain.id over getChainId when both are present', async () => {
@@ -344,9 +340,7 @@ describe('viem adapter EIP-6492 support', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect(result.error.type).toBe(
-      SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
-    )
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE_CHAIN_ID)
     expect(verifyMessageCalled).toBe(false)
   })
 
@@ -537,9 +531,7 @@ describe('ethers adapter EIP-6492 support', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect(result.error.type).toBe(
-      SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
-    )
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE_CHAIN_ID)
     expect(providerCallUsed).toBe(false)
   })
 

@@ -574,9 +574,7 @@ describe('Error type specificity', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect(result.error.type).toBe(
-      SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
-    )
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE_CHAIN_ID)
   })
 
   test('EIP1271 rejects provider without getNetwork support', async () => {
@@ -591,9 +589,7 @@ describe('Error type specificity', () => {
       },
     )
     expect(result.success).toBe(false)
-    expect(result.error.type).toBe(
-      SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
-    )
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE_CHAIN_ID)
   })
 
   test('EIP1271 rejects viem client without chain.id', async () => {
@@ -612,9 +608,7 @@ describe('Error type specificity', () => {
       },
     )
     expect(result.success).toBe(false)
-    expect(result.error.type).toBe(
-      SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
-    )
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE_CHAIN_ID)
   })
 
   test('verify rejects missing domain', async () => {
