@@ -1,5 +1,11 @@
 # @signinwithethereum/siwe-parser
 
+## 4.0.2
+
+### Patch Changes
+
+- [`8c80434`](https://github.com/signinwithethereum/siwe/commit/8c8043498becdc37bfa46ae0160fa9e9ef753c2e) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Fix esm issue: include apg-js.
+
 ## 4.0.1
 
 ### Patch Changes
