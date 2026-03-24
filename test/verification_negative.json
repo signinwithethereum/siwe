@@ -2,7 +2,7 @@
 	"expired message": {
 		"domain": "siwe.xyz",
 		"address": "0x2ecA0068307e706741445764A3D6A4402aC2A5a9",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "lx2nx4so",
@@ -15,7 +15,7 @@
 		"domainBinding": "example.com",
 		"domain": "siwe.xyz",
 		"address": "0x9D85ca56217D2bb651b00f15e694EB7E713637D4",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "bTyXgcQxn2htgkjJn",
@@ -27,7 +27,7 @@
 	"custom time": {
 		"domain": "siwe.xyz",
 		"address": "0x9D85ca56217D2bb651b00f15e694EB7E713637D4",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "bTyXgcQxn2htgkjJn",
@@ -40,7 +40,7 @@
 	"custom nonce": {
 		"domain": "siwe.xyz",
 		"address": "0x9D85ca56217D2bb651b00f15e694EB7E713637D4",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "bTyXgcQxn2htgkjJn",
@@ -53,7 +53,7 @@
 	"malformed signature": {
 		"domain": "siwe.xyz",
 		"address": "0x6Da01670d8fc844e736095918bbE11fE8D564163",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "rmplqh1gf",
@@ -65,7 +65,7 @@
 	"wrong signature": {
 		"domain": "siwe.xyz",
 		"address": "0x6Da01670d8fc844e736095918bbE11fE8D564163",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "rmplqh1gf",
@@ -77,7 +77,7 @@
 	"not yet valid": {
 		"domain": "siwe.xyz",
 		"address": "0xE6D3Aa1F561A215E5eb1f02Ba8705385F03fCaFB",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "lx2nx4so",
@@ -89,7 +89,7 @@
 	"invalid issuedAt": {
 		"domain": "siwe.xyz",
 		"address": "0xA0aEF081D1ACE5F830532d7D77Ea4c8EE0EaBCF9",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "bTyXgcQxn2htgkjJn",
@@ -100,7 +100,7 @@
 	"invalid notBefore": {
 		"domain": "siwe.xyz",
 		"address": "0xA2ce2B71d77983918C8388c47576ad77E339B2F9",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "bTyXgcQxn2htgkjJn",
@@ -113,7 +113,7 @@
 	"invalid expirationTime": {
 		"domain": "siwe.xyz",
 		"address": "0xeE5A13CfAC109487d56F9186241009Dd9A7b4Ad4",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "bTyXgcQxn2htgkjJn",

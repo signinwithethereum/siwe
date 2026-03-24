@@ -2,7 +2,7 @@
 	"example message": {
 		"domain": "siwe.xyz",
 		"address": "0xAE9aA90F1a627c7a20783AF9e8747fCFEDEFAd03",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "bTyXgcQxn2htgkjJn",
@@ -14,7 +14,7 @@
 	"not yet valid": {
 		"domain": "siwe.xyz",
 		"address": "0x1F61EA6Fdd71c1D68182479b10B5CdBF3D795ece",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "lx2nx4so",
@@ -27,7 +27,7 @@
 	"expired message": {
 		"domain": "siwe.xyz",
 		"address": "0x00401B0F059b5AF9f71A43263F2Fc17422B6B8f8",
-		"statement": "Sign in with Ethereum Example Statement",
+		"statement": "Sign In with Ethereum Example Statement",
 		"uri": "https://siwe.xyz",
 		"version": "1",
 		"nonce": "lx2nx4so",
