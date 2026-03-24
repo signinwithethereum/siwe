@@ -1,5 +1,11 @@
 # @signinwithethereum/siwe
 
+## 4.0.2
+
+### Patch Changes
+
+- [`abe85a2`](https://github.com/signinwithethereum/siwe/commit/abe85a2e515f7b2b325323a4e6589feda1c73c0e) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Remove hard ethers dependency (dynamically check ethers installation to mirror viem detection)
+
 ## 4.0.1
 
 ### Patch Changes
