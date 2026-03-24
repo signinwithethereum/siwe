@@ -1,6 +1,6 @@
 {
   "name": "@signinwithethereum/siwe",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "type": "module",
   "description": "Sign in with Ethereum (SIWE)",
   "main": "dist/siwe.cjs",

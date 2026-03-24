@@ -1,5 +1,12 @@
 # @signinwithethereum/siwe
 
+## 4.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`8c80434`](https://github.com/signinwithethereum/siwe/commit/8c8043498becdc37bfa46ae0160fa9e9ef753c2e)]:
+  - @signinwithethereum/siwe-parser@4.0.2
+
 ## 4.0.2
 
 ### Patch Changes
