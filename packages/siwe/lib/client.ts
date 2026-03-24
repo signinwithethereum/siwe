@@ -5,7 +5,7 @@ import {
 
 import type { SiweConfig } from './config'
 import { getGlobalConfig } from './config'
-import { tryAutoDetectEthers } from './ethersCompat'
+
 import {
   SiweError,
   SiweErrorType,
@@ -37,6 +37,7 @@ async function resolveConfig(opts: VerifyOpts): Promise<SiweConfig> {
     // If a legacy provider was passed alongside global config, create an ethers
     // config with that provider for EIP-1271 support
     if (provider && !global.checkContractWalletSignature) {
+      const { tryAutoDetectEthers } = await import('./ethersCompat')
       const ethersConfig = await tryAutoDetectEthers(provider)
       if (ethersConfig) {
         return {
@@ -50,6 +51,7 @@ async function resolveConfig(opts: VerifyOpts): Promise<SiweConfig> {
   }
 
   // Backward compat: auto-detect ethers
+  const { tryAutoDetectEthers } = await import('./ethersCompat')
   const ethersConfig = await tryAutoDetectEthers(provider)
   if (ethersConfig) {
     return ethersConfig
