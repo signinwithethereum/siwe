@@ -14,14 +14,14 @@ Harden and unify error handling across the library
 **`verify()` now throws `SiweError` directly** when `suppressExceptions` is `false` (the default). Previously it threw the entire `SiweResponse` object. Update catch blocks:
 
 ```ts
-// Before (v4):
+// Before (v4.0):
 try {
   await msg.verify(params)
 } catch (e) {
   console.log(e.error.type)
 } // e was SiweResponse
 
-// After (v5):
+// After (v4.1):
 try {
   await msg.verify(params)
 } catch (e) {
