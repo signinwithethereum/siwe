@@ -61,8 +61,8 @@ async function resolveConfig(opts: VerifyOpts): Promise<SiweConfig> {
     'No verification config found. Either:\n' +
       '  - Call configure() with a SiweConfig\n' +
       '  - Pass { config } in VerifyOpts\n' +
-      '  - Install ethers (npm install ethers) for automatic detection\n' +
-      '  - Install viem and use createViemConfig()',
+      '  - Install viem and use createViemConfig()\n' +
+      '  - Install ethers (npm install ethers) for automatic detection',
   )
 }
 
@@ -248,9 +248,10 @@ export class SiweMessage {
     }
 
     const suffix = suffixArray.join('\n')
-    prefix = [prefix, this.statement].join('\n\n')
     if (this.statement !== undefined) {
-      prefix += '\n'
+      prefix = [prefix, this.statement].join('\n\n') + '\n'
+    } else {
+      prefix += '\n\n'
     }
     return [prefix, suffix].join('\n')
   }
