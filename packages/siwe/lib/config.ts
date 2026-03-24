@@ -1,3 +1,5 @@
+import { SiweError, SiweErrorType } from './types'
+
 /** EIP-1271 magic value returned by isValidSignature for valid signatures */
 export const EIP1271_MAGICVALUE = '0x1626ba7e'
 
@@ -102,7 +104,9 @@ export async function createConfig(rpcUrl: string): Promise<SiweConfig> {
     // ethers not available
   }
 
-  throw new Error(
-    'createConfig requires viem or ethers. Install one with: npm install viem',
+  throw new SiweError(
+    SiweErrorType.MISSING_PROVIDER_LIBRARY,
+    'viem or ethers installed',
+    'Neither found',
   )
 }

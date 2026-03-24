@@ -57,12 +57,10 @@ async function resolveConfig(opts: VerifyOpts): Promise<SiweConfig> {
     return ethersConfig
   }
 
-  throw new Error(
-    'No verification config found. Either:\n' +
-      '  - Call configure() with a SiweConfig\n' +
-      '  - Pass { config } in VerifyOpts\n' +
-      '  - Install viem and use createViemConfig()\n' +
-      '  - Install ethers (npm install ethers) for automatic detection',
+  throw new SiweError(
+    SiweErrorType.MISSING_CONFIG,
+    'SiweConfig via configure(), opts.config, or auto-detection',
+    'No config found',
   )
 }
 
@@ -291,7 +289,7 @@ export class SiweMessage {
       if (opts.suppressExceptions) {
         return result
       }
-      throw result
+      throw result.error
     }
 
     const invalidParams = checkInvalidKeys<VerifyParams>(
@@ -302,8 +300,10 @@ export class SiweMessage {
       return fail({
         success: false,
         data: this,
-        error: new Error(
-          `${invalidParams.join(', ')} is/are not valid key(s) for VerifyParams.`,
+        error: new SiweError(
+          SiweErrorType.INVALID_PARAMS,
+          `Valid keys: ${VerifyParamsKeys.join(', ')}`,
+          `Invalid keys: ${invalidParams.join(', ')}`,
         ),
       })
     }
@@ -313,8 +313,10 @@ export class SiweMessage {
       return fail({
         success: false,
         data: this,
-        error: new Error(
-          `${invalidOpts.join(', ')} is/are not valid key(s) for VerifyOpts.`,
+        error: new SiweError(
+          SiweErrorType.INVALID_PARAMS,
+          `Valid keys: ${VerifyOptsKeys.join(', ')}`,
+          `Invalid keys: ${invalidOpts.join(', ')}`,
         ),
       })
     }
@@ -327,7 +329,14 @@ export class SiweMessage {
       return fail({
         success: false,
         data: this,
-        error: e,
+        error:
+          e instanceof SiweError
+            ? e
+            : new SiweError(
+                SiweErrorType.MISSING_CONFIG,
+                undefined,
+                e instanceof Error ? e.message : String(e),
+              ),
       })
     }
 
@@ -495,7 +504,11 @@ export class SiweMessage {
       return fail({
         success: false,
         data: this,
-        error: e,
+        error: new SiweError(
+          SiweErrorType.MALFORMED_MESSAGE,
+          undefined,
+          e instanceof Error ? e.message : String(e),
+        ),
       })
     }
 
@@ -539,7 +552,18 @@ export class SiweMessage {
             ),
           }
         }
-        return { success: false, data: this, error }
+        return {
+          success: false,
+          data: this,
+          error:
+            error instanceof SiweError
+              ? error
+              : new SiweError(
+                  SiweErrorType.INVALID_SIGNATURE,
+                  undefined,
+                  error instanceof Error ? error.message : String(error),
+                ),
+        }
       })
 
     const [EIP1271Response, fallbackResponse] = await Promise.all([

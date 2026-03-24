@@ -86,34 +86,34 @@ export interface SiweResponse {
   success: boolean
 
   /** If present `success` MUST be false and will provide extra information on the failure reason. */
-  error?: SiweError | Error
+  error?: SiweError
 
   /** Original message that was verified. */
   data: SiweMessage
 }
 
 /**
- * Interface used to return errors in SiweResponses.
+ * Structured error for SIWE verification and validation failures.
+ * Extends Error so it works with instanceof, stack traces, and error reporting tools.
  */
-export class SiweError {
-  constructor(
-    type: SiweErrorType | string,
-    expected?: string,
-    received?: string,
-  ) {
+export class SiweError extends Error {
+  /** Structured error type for programmatic matching. */
+  readonly type: SiweErrorType
+
+  /** Expected value or condition to pass. */
+  readonly expected?: string
+
+  /** Received value that caused the failure. */
+  readonly received?: string
+
+  constructor(type: SiweErrorType, expected?: string, received?: string) {
+    super(type)
+    this.name = 'SiweError'
     this.type = type
     this.expected = expected
     this.received = received
+    Object.setPrototypeOf(this, SiweError.prototype)
   }
-
-  /** Type of the error. */
-  type: SiweErrorType | string
-
-  /** Expected value or condition to pass. */
-  expected?: string
-
-  /** Received value that caused the failure. */
-  received?: string
 }
 
 /**
@@ -182,4 +182,19 @@ export enum SiweErrorType {
 
   /** `chainId` was not provided in strict mode. */
   MISSING_CHAIN_ID = 'Chain ID is required in strict mode.',
+
+  /** No verification config found (no global config, no opts.config, no auto-detect). */
+  MISSING_CONFIG = 'No verification configuration found.',
+
+  /** Required provider library (viem or ethers) is not installed. */
+  MISSING_PROVIDER_LIBRARY = 'Required provider library is not installed.',
+
+  /** Nonce generation failed. */
+  NONCE_GENERATION_FAILED = 'Nonce generation failed.',
+
+  /** Invalid parameters or options passed to verify(). */
+  INVALID_PARAMS = 'Invalid parameters passed to verify.',
+
+  /** Message could not be prepared for signing. */
+  MALFORMED_MESSAGE = 'Message could not be prepared for signing.',
 }

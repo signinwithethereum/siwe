@@ -22,7 +22,7 @@ const EIP1271: object = JSON.parse(
 import { Wallet } from 'ethers'
 import { SiweMessage } from './client'
 import { createEthersConfig, createViemConfig } from './siwe'
-import { SiweErrorType } from './types'
+import { SiweError, SiweErrorType } from './types'
 
 const verificationNegativeEntries = Object.entries(verificationNegative)
 const constructorInvalidVerificationCases = new Set([
@@ -90,7 +90,7 @@ describe(`Message verification without suppressExceptions`, () => {
           domain: test_fields.domainBinding ?? test_fields.domain,
           nonce: test_fields.matchNonce ?? test_fields.nonce,
         }),
-      ).rejects.toMatchObject({ success: false })
+      ).rejects.toBeInstanceOf(SiweError)
     },
   )
 
@@ -262,11 +262,9 @@ describe(`Unit`, () => {
         nonce: msg.nonce,
         invalidKey: 'should throw',
       })
-    } catch (e) {
-      expect(e.success).toBeFalsy()
-      expect(e.error).toEqual(
-        new Error('invalidKey is/are not valid key(s) for VerifyParams.'),
-      )
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(SiweError)
+      expect(e.type).toBe(SiweErrorType.INVALID_PARAMS)
     }
   })
 
@@ -289,11 +287,9 @@ describe(`Unit`, () => {
         { signature, domain: msg.domain, nonce: msg.nonce },
         { suppressExceptions: true, invalidKey: 'should throw' },
       )
-    } catch (e) {
-      expect(e.success).toBeFalsy()
-      expect(e.error).toEqual(
-        new Error('invalidKey is/are not valid key(s) for VerifyOpts.'),
-      )
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(SiweError)
+      expect(e.type).toBe(SiweErrorType.INVALID_PARAMS)
     }
   })
 })
@@ -402,7 +398,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.EXPIRED_MESSAGE)
+      expect(e.type).toBe(SiweErrorType.EXPIRED_MESSAGE)
     }
   })
 
@@ -418,7 +414,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.NOT_YET_VALID_MESSAGE)
+      expect(e.type).toBe(SiweErrorType.NOT_YET_VALID_MESSAGE)
     }
   })
 
@@ -434,7 +430,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.DOMAIN_MISMATCH)
+      expect(e.type).toBe(SiweErrorType.DOMAIN_MISMATCH)
     }
   })
 
@@ -451,7 +447,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.URI_MISMATCH)
+      expect(e.type).toBe(SiweErrorType.URI_MISMATCH)
     }
   })
 
@@ -468,7 +464,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.CHAIN_ID_MISMATCH)
+      expect(e.type).toBe(SiweErrorType.CHAIN_ID_MISMATCH)
     }
   })
 
@@ -497,7 +493,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.REQUEST_ID_MISMATCH)
+      expect(e.type).toBe(SiweErrorType.REQUEST_ID_MISMATCH)
     }
   })
 
@@ -514,7 +510,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.REQUEST_ID_MISMATCH)
+      expect(e.type).toBe(SiweErrorType.REQUEST_ID_MISMATCH)
     }
   })
 
@@ -530,7 +526,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.NONCE_MISMATCH)
+      expect(e.type).toBe(SiweErrorType.NONCE_MISMATCH)
     }
   })
 
@@ -546,7 +542,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.INVALID_SIGNATURE)
+      expect(e.type).toBe(SiweErrorType.INVALID_SIGNATURE)
     }
   })
 
@@ -563,7 +559,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.CHAIN_ID_MISMATCH)
+      expect(e.type).toBe(SiweErrorType.CHAIN_ID_MISMATCH)
     }
   })
 
@@ -578,7 +574,7 @@ describe('Error type specificity', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(
+    expect(result.error.type).toBe(
       SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
     )
   })
@@ -595,7 +591,7 @@ describe('Error type specificity', () => {
       },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(
+    expect(result.error.type).toBe(
       SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
     )
   })
@@ -616,7 +612,7 @@ describe('Error type specificity', () => {
       },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(
+    expect(result.error.type).toBe(
       SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
     )
   })
@@ -629,7 +625,7 @@ describe('Error type specificity', () => {
       { suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(SiweErrorType.MISSING_DOMAIN)
+    expect(result.error.type).toBe(SiweErrorType.MISSING_DOMAIN)
   })
 
   test('verify rejects missing nonce', async () => {
@@ -640,7 +636,7 @@ describe('Error type specificity', () => {
       { suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(SiweErrorType.MISSING_NONCE)
+    expect(result.error.type).toBe(SiweErrorType.MISSING_NONCE)
   })
 
   test('strict mode rejects missing uri', async () => {
@@ -662,7 +658,7 @@ describe('Error type specificity', () => {
       { suppressExceptions: true, strict: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(SiweErrorType.MISSING_URI)
+    expect(result.error.type).toBe(SiweErrorType.MISSING_URI)
   })
 
   test('strict mode rejects missing chainId', async () => {
@@ -684,7 +680,7 @@ describe('Error type specificity', () => {
       { suppressExceptions: true, strict: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(SiweErrorType.MISSING_CHAIN_ID)
+    expect(result.error.type).toBe(SiweErrorType.MISSING_CHAIN_ID)
   })
 
   test('strict mode accepts all required fields', async () => {
@@ -727,7 +723,7 @@ describe('Error type specificity', () => {
       { suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(SiweErrorType.INVALID_TIME_FORMAT)
+    expect(result.error.type).toBe(SiweErrorType.INVALID_TIME_FORMAT)
   })
 
   test('scheme mismatch returns SCHEME_MISMATCH', async () => {
@@ -755,7 +751,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.SCHEME_MISMATCH)
+      expect(e.type).toBe(SiweErrorType.SCHEME_MISMATCH)
     }
   })
 
@@ -867,7 +863,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.EXPIRED_MESSAGE)
+      expect(e.type).toBe(SiweErrorType.EXPIRED_MESSAGE)
     }
   })
 
@@ -895,7 +891,7 @@ describe('Error type specificity', () => {
       })
       expect.unreachable('should have rejected')
     } catch (e: any) {
-      expect(e.error.type).toBe(SiweErrorType.NOT_YET_VALID_MESSAGE)
+      expect(e.type).toBe(SiweErrorType.NOT_YET_VALID_MESSAGE)
     }
   })
 

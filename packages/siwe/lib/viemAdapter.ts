@@ -1,5 +1,6 @@
 import { EIP1271_MAGICVALUE } from './config'
 import type { SiweConfig } from './config'
+import { SiweError, SiweErrorType } from './types'
 import { ChainIdMismatchError } from './utils'
 
 const EIP1271_ABI = [
@@ -53,8 +54,10 @@ export async function createViemConfig(
   try {
     viem = await import('viem')
   } catch {
-    throw new Error(
-      'viem is required for createViemConfig. Install it with: npm install viem',
+    throw new SiweError(
+      SiweErrorType.MISSING_PROVIDER_LIBRARY,
+      'viem installed (npm install viem)',
+      'viem not found',
     )
   }
 

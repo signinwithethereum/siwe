@@ -1,6 +1,7 @@
 import { EIP1271_MAGICVALUE } from './config'
 import type { SiweConfig } from './config'
 import { isEIP6492Signature, EIP6492_VALIDATOR_BYTECODE } from './eip6492'
+import { SiweError, SiweErrorType } from './types'
 import { ChainIdMismatchError } from './utils'
 
 const EIP1271_ABI = [
@@ -71,8 +72,10 @@ function loadEthers(): Promise<EthersHelpers | null> {
 export async function createEthersConfig(provider?: any): Promise<SiweConfig> {
   const helpers = await loadEthers()
   if (!helpers) {
-    throw new Error(
-      'ethers is required for createEthersConfig. Install it with: npm install ethers',
+    throw new SiweError(
+      SiweErrorType.MISSING_PROVIDER_LIBRARY,
+      'ethers installed (npm install ethers)',
+      'ethers not found',
     )
   }
 

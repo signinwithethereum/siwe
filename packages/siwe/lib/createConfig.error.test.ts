@@ -34,17 +34,23 @@ describe('no ethers or viem installed', () => {
     expect(msg.domain).toBe('test.example')
   })
 
-  test('createEthersConfig rejects with helpful error', async () => {
+  test('createEthersConfig rejects with SiweError', async () => {
     const { createEthersConfig } = await import('./ethersCompat')
+    const { SiweError, SiweErrorType } = await import('./types')
+    await expect(createEthersConfig()).rejects.toThrow(SiweError)
     await expect(createEthersConfig()).rejects.toThrow(
-      'ethers is required for createEthersConfig',
+      SiweErrorType.MISSING_PROVIDER_LIBRARY,
     )
   })
 
-  test('createConfig throws when neither library is available', async () => {
+  test('createConfig throws SiweError when neither library is available', async () => {
     const { createConfig } = await import('./config')
+    const { SiweError, SiweErrorType } = await import('./types')
     await expect(createConfig('http://localhost:8545')).rejects.toThrow(
-      'createConfig requires viem or ethers',
+      SiweError,
+    )
+    await expect(createConfig('http://localhost:8545')).rejects.toThrow(
+      SiweErrorType.MISSING_PROVIDER_LIBRARY,
     )
   })
 })

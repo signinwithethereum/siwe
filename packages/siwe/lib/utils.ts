@@ -2,6 +2,7 @@ import { isValidISO8601Date } from '@signinwithethereum/siwe-parser'
 
 import type { SiweMessage } from './client'
 import type { SiweConfig } from './config'
+import { SiweError, SiweErrorType } from './types'
 
 /**
  * This method calls the EIP-1271 method for Smart Contract wallets
@@ -53,7 +54,11 @@ export const generateNonce = (): string => {
     nonce += ALPHANUMERIC[bytes[i] % ALPHANUMERIC.length]
   }
   if (!nonce || nonce.length < 8) {
-    throw new Error('Error during nonce creation.')
+    throw new SiweError(
+      SiweErrorType.NONCE_GENERATION_FAILED,
+      'alphanumeric nonce >= 8 chars',
+      String(nonce),
+    )
   }
   return nonce
 }

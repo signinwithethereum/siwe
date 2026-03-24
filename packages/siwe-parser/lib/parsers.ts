@@ -5,6 +5,22 @@ const grammarObj = new grammar()
 
 export * from './utils'
 
+/**
+ * Structured error for SIWE message parsing failures.
+ * Collects all individual validation errors encountered during parsing.
+ */
+export class SiweParseError extends Error {
+  /** Individual error messages collected during parsing. */
+  readonly errors: string[]
+
+  constructor(errors: string[]) {
+    super(errors.join('\n'))
+    this.name = 'SiweParseError'
+    this.errors = errors
+    Object.setPrototypeOf(this, SiweParseError.prototype)
+  }
+}
+
 export class ParsedMessage {
   scheme: string | undefined
   domain: string
@@ -111,7 +127,7 @@ export class ParsedMessage {
       errors.push(`Invalid message: ${JSON.stringify(result)}`)
     }
     if (errors.length > 0) {
-      throw new Error(errors.join('\n'))
+      throw new SiweParseError(errors)
     }
 
     this.scheme = elements.scheme

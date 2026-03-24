@@ -8,7 +8,7 @@ import {
   isEIP6492Signature,
 } from './eip6492'
 import { createEthersConfig } from './ethersCompat'
-import { SiweErrorType } from './types'
+import { SiweError, SiweErrorType } from './types'
 import { generateNonce } from './utils'
 import { createViemConfig } from './viemAdapter'
 
@@ -131,7 +131,7 @@ describe('viem adapter getChainId fallback', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(
+    expect(result.error.type).toBe(
       SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
     )
   })
@@ -152,7 +152,7 @@ describe('viem adapter getChainId fallback', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(
+    expect(result.error.type).toBe(
       SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
     )
   })
@@ -344,7 +344,7 @@ describe('viem adapter EIP-6492 support', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(
+    expect(result.error.type).toBe(
       SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
     )
     expect(verifyMessageCalled).toBe(false)
@@ -372,8 +372,9 @@ describe('viem adapter EIP-6492 support', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect(result.error).toBeInstanceOf(Error)
-    expect((result.error as Error).message).toBe('RPC connection failed')
+    expect(result.error).toBeInstanceOf(SiweError)
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE)
+    expect(result.error.received).toContain('RPC connection failed')
   })
 
   test('EIP-6492 sig without publicClient fails as INVALID_SIGNATURE', async () => {
@@ -390,7 +391,7 @@ describe('viem adapter EIP-6492 support', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(SiweErrorType.INVALID_SIGNATURE)
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE)
   })
 })
 
@@ -536,7 +537,7 @@ describe('ethers adapter EIP-6492 support', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(
+    expect(result.error.type).toBe(
       SiweErrorType.INVALID_SIGNATURE_CHAIN_ID,
     )
     expect(providerCallUsed).toBe(false)
@@ -562,8 +563,9 @@ describe('ethers adapter EIP-6492 support', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect(result.error).toBeInstanceOf(Error)
-    expect((result.error as Error).message).toBe('eth_call reverted')
+    expect(result.error).toBeInstanceOf(SiweError)
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE)
+    expect(result.error.received).toContain('eth_call reverted')
   })
 
   test('provider.call returning empty result rejects signature', async () => {
@@ -600,6 +602,6 @@ describe('ethers adapter EIP-6492 support', () => {
       { config, suppressExceptions: true },
     )
     expect(result.success).toBe(false)
-    expect((result.error as any).type).toBe(SiweErrorType.INVALID_SIGNATURE)
+    expect(result.error.type).toBe(SiweErrorType.INVALID_SIGNATURE)
   })
 })
