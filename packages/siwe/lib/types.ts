@@ -1,5 +1,5 @@
 import type { SiweConfig } from './config'
-import { SiweMessage } from './client'
+import type { SiweMessage } from './client'
 
 export interface VerifyParams {
   /** Signature of the message signed by the wallet */
