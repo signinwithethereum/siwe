@@ -21,6 +21,16 @@ import {
   checkInvalidKeys,
 } from './utils'
 
+/** Wrap an unknown caught value in a SiweError, preserving it if already one. */
+function wrapError(e: unknown, fallbackType: SiweErrorType): SiweError {
+  if (e instanceof SiweError) return e
+  return new SiweError(
+    fallbackType,
+    undefined,
+    e instanceof Error ? e.message : String(e),
+  )
+}
+
 /**
  * Resolve the SiweConfig to use for verification.
  * Priority: opts.config > global config > auto-detect ethers (with opts.provider for backward compat).
@@ -329,14 +339,7 @@ export class SiweMessage {
       return fail({
         success: false,
         data: this,
-        error:
-          e instanceof SiweError
-            ? e
-            : new SiweError(
-                SiweErrorType.MISSING_CONFIG,
-                undefined,
-                e instanceof Error ? e.message : String(e),
-              ),
+        error: wrapError(e, SiweErrorType.MISSING_CONFIG),
       })
     }
 
@@ -504,11 +507,7 @@ export class SiweMessage {
       return fail({
         success: false,
         data: this,
-        error: new SiweError(
-          SiweErrorType.MALFORMED_MESSAGE,
-          undefined,
-          e instanceof Error ? e.message : String(e),
-        ),
+        error: wrapError(e, SiweErrorType.MALFORMED_MESSAGE),
       })
     }
 
@@ -555,14 +554,7 @@ export class SiweMessage {
         return {
           success: false,
           data: this,
-          error:
-            error instanceof SiweError
-              ? error
-              : new SiweError(
-                  SiweErrorType.INVALID_SIGNATURE,
-                  undefined,
-                  error instanceof Error ? error.message : String(error),
-                ),
+          error: wrapError(error, SiweErrorType.INVALID_SIGNATURE),
         }
       })
 
