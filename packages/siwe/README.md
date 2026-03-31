@@ -4,9 +4,9 @@ TypeScript implementation of [Sign in with Ethereum](https://eips.ethereum.org/E
 
 Works with **viem** or **ethers** (v5/v6).
 
-## Why not pure viem?
+## Why this package?
 
-Viem's `verifySiweMessage` only recovers an EOA signer via `ecrecover`. If the address is a smart contract wallet (ERC-1271) or hasn't been deployed yet (EIP-6492), the check fails silently. This package runs ERC-1271 and EIP-6492 verification automatically alongside EOA recovery, so `verify()` works for every type of Ethereum account without extra code: EOAs, multisigs, and smart wallets.
+Smart account verification is tricky to get right. This package handles ERC-1271 (smart contract wallets) and EIP-6492 (pre-deployed wallets) automatically alongside standard EOA recovery, so `verify()` works for every type of Ethereum account without extra code: EOAs, multisigs, and smart wallets.
 
 ## Install
 
