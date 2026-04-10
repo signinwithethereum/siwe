@@ -5,6 +5,7 @@
     "moduleResolution": "bundler",
     "declaration": true,
     "outDir": "./dist",
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["vitest/globals"]

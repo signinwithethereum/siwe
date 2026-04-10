@@ -1,29 +1,13 @@
 import { ParsedMessage } from './parsers'
 import apgLib from 'apg-js/src/apg-lib/node-exports.js'
 import { grammar } from './siwe-grammar'
-import { readFileSync } from 'fs'
-
-const validChars: object = JSON.parse(
-  readFileSync('../../test/valid_chars.json', 'utf8'),
-)
-const invalidChars: object = JSON.parse(
-  readFileSync('../../test/invalid_chars.json', 'utf8'),
-)
-const validUris: object = JSON.parse(
-  readFileSync('../../test/valid_uris.json', 'utf8'),
-)
-const invalidUris: object = JSON.parse(
-  readFileSync('../../test/invalid_uris.json', 'utf8'),
-)
-const validResources: object = JSON.parse(
-  readFileSync('../../test/valid_resources.json', 'utf8'),
-)
-const invalidResources: object = JSON.parse(
-  readFileSync('../../test/invalid_resources.json', 'utf8'),
-)
-const validSpec: object = JSON.parse(
-  readFileSync('../../test/valid_specification.json', 'utf8'),
-)
+import validChars from '../../test/valid_chars.json'
+import invalidChars from '../../test/invalid_chars.json'
+import validUris from '../../test/valid_uris.json'
+import invalidUris from '../../test/invalid_uris.json'
+import validResources from '../../test/valid_resources.json'
+import invalidResources from '../../test/invalid_resources.json'
+import validSpec from '../../test/valid_specification.json'
 
 const grammarObj = new grammar()
 const apgParser = new apgLib.parser()

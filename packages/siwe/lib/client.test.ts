@@ -1,24 +1,9 @@
-import { readFileSync } from 'fs'
-
-const parsingPositive: object = JSON.parse(
-  readFileSync('../../test/parsing_positive.json', 'utf8'),
-)
-const parsingNegative: object = JSON.parse(
-  readFileSync('../../test/parsing_negative.json', 'utf8'),
-)
-const parsingNegativeObjects: object = JSON.parse(
-  readFileSync('../../test/parsing_negative_objects.json', 'utf8'),
-)
-const verificationPositive: object = JSON.parse(
-  readFileSync('../../test/verification_positive.json', 'utf8'),
-)
-const verificationNegative: object = JSON.parse(
-  readFileSync('../../test/verification_negative.json', 'utf8'),
-)
-const EIP1271: object = JSON.parse(
-  readFileSync('../../test/eip1271.json', 'utf8'),
-)
-
+import parsingPositive from '../../test/parsing_positive.json'
+import parsingNegative from '../../test/parsing_negative.json'
+import parsingNegativeObjects from '../../test/parsing_negative_objects.json'
+import verificationPositive from '../../test/verification_positive.json'
+import verificationNegative from '../../test/verification_negative.json'
+import EIP1271 from '../../test/eip1271.json'
 import { Wallet } from 'ethers'
 import { SiweMessage } from './client'
 import { createEthersConfig, createViemConfig } from './siwe'

@@ -1,12 +1,6 @@
 import { ParsedMessage } from './parsers'
-import { readFileSync } from 'fs'
-
-const parsingPositive: object = JSON.parse(
-  readFileSync('../../test/parsing_positive.json', 'utf8'),
-)
-const parsingNegative: object = JSON.parse(
-  readFileSync('../../test/parsing_negative.json', 'utf8'),
-)
+import parsingPositive from '../../test/parsing_positive.json'
+import parsingNegative from '../../test/parsing_negative.json'
 
 //
 describe('Successfully parses with ABNF Client', () => {

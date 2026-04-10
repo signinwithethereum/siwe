@@ -1,9 +1,5 @@
 import { SiweMessage } from './client'
-import { readFileSync } from 'fs'
-
-const messages: object = JSON.parse(
-  readFileSync('../../test/message_objects.json', 'utf8'),
-)
+import messages from '../../test/message_objects.json'
 
 describe('Message Generation', () => {
   test.each(Object.entries(messages))('%s', (n, test: any) => {
