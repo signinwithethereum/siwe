@@ -4,25 +4,25 @@ import { grammar } from './siwe-grammar'
 import { readFileSync } from 'fs'
 
 const validChars: object = JSON.parse(
-  readFileSync('../../test/valid_chars.json', 'utf-8'),
+  readFileSync('../../test/valid_chars.json', 'utf8'),
 )
 const invalidChars: object = JSON.parse(
-  readFileSync('../../test/invalid_chars.json', 'utf-8'),
+  readFileSync('../../test/invalid_chars.json', 'utf8'),
 )
 const validUris: object = JSON.parse(
-  readFileSync('../../test/valid_uris.json', 'utf-8'),
+  readFileSync('../../test/valid_uris.json', 'utf8'),
 )
 const invalidUris: object = JSON.parse(
-  readFileSync('../../test/invalid_uris.json', 'utf-8'),
+  readFileSync('../../test/invalid_uris.json', 'utf8'),
 )
 const validResources: object = JSON.parse(
-  readFileSync('../../test/valid_resources.json', 'utf-8'),
+  readFileSync('../../test/valid_resources.json', 'utf8'),
 )
 const invalidResources: object = JSON.parse(
-  readFileSync('../../test/invalid_resources.json', 'utf-8'),
+  readFileSync('../../test/invalid_resources.json', 'utf8'),
 )
 const validSpec: object = JSON.parse(
-  readFileSync('../../test/valid_specification.json', 'utf-8'),
+  readFileSync('../../test/valid_specification.json', 'utf8'),
 )
 
 const grammarObj = new grammar()
