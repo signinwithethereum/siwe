@@ -1,5 +1,5 @@
 import { SiweMessage } from './client'
-import messages from '../../test/message_objects.json'
+import messages from '../../../test-vectors/vectors/objects/message_objects.json'
 
 describe('Message Generation', () => {
   test.each(Object.entries(messages))('%s', (n, test: any) => {

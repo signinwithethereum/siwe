@@ -1,6 +1,6 @@
 import { ParsedMessage } from './parsers'
-import parsingPositive from '../../test/parsing_positive.json'
-import parsingNegative from '../../test/parsing_negative.json'
+import parsingPositive from '../../../test-vectors/vectors/parsing/parsing_positive.json'
+import parsingNegative from '../../../test-vectors/vectors/parsing/parsing_negative.json'
 
 //
 describe('Successfully parses with ABNF Client', () => {

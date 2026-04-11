@@ -1,13 +1,13 @@
 import { ParsedMessage } from './parsers'
 import apgLib from 'apg-js/src/apg-lib/node-exports.js'
 import { grammar } from './siwe-grammar'
-import validChars from '../../test/valid_chars.json'
-import invalidChars from '../../test/invalid_chars.json'
-import validUris from '../../test/valid_uris.json'
-import invalidUris from '../../test/invalid_uris.json'
-import validResources from '../../test/valid_resources.json'
-import invalidResources from '../../test/invalid_resources.json'
-import validSpec from '../../test/valid_specification.json'
+import validChars from '../../../test-vectors/vectors/grammar/valid_chars.json'
+import invalidChars from '../../../test-vectors/vectors/grammar/invalid_chars.json'
+import validUris from '../../../test-vectors/vectors/grammar/valid_uris.json'
+import invalidUris from '../../../test-vectors/vectors/grammar/invalid_uris.json'
+import validResources from '../../../test-vectors/vectors/grammar/valid_resources.json'
+import invalidResources from '../../../test-vectors/vectors/grammar/invalid_resources.json'
+import validSpec from '../../../test-vectors/vectors/grammar/valid_specification.json'
 
 const grammarObj = new grammar()
 const apgParser = new apgLib.parser()
