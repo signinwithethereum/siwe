@@ -44,6 +44,8 @@ export class ParsedMessage {
     query: string | undefined
     fragment: string | undefined
   }
+  /** Non-fatal warnings from parsing (e.g. unchecksummed address). */
+  warnings: string[]
 
   // and display it on an HTML page.
   constructor(msg: string) {
@@ -96,6 +98,7 @@ export class ParsedMessage {
     // initialize parsed elements
     const elements = {
       errors: [],
+      warnings: [],
       lineno: 1,
       scheme: undefined,
       domain: undefined,
@@ -130,6 +133,7 @@ export class ParsedMessage {
       throw new SiweParseError(errors)
     }
 
+    this.warnings = [...elements.warnings]
     this.scheme = elements.scheme
     this.domain = elements.domain
     this.address = elements.address

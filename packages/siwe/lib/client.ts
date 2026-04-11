@@ -111,6 +111,8 @@ export class SiweMessage {
    * resolved as part of authentication by the relying party. They are
    * expressed as RFC 3986 URIs separated by `\n- `. */
   resources?: string[]
+  /** Non-fatal warnings from parsing (e.g. unchecksummed address). */
+  warnings: string[]
 
   /**
    * Creates a parsed Sign in with Ethereum Message (EIP-4361) object from a
@@ -122,6 +124,7 @@ export class SiweMessage {
     if (typeof param === 'string') {
       /* the message string (including nonce) is valid or ParsedMessage will throw */
       const parsedMessage = new ParsedMessage(param)
+      this.warnings = parsedMessage.warnings
       this.scheme = parsedMessage.scheme
       this.domain = parsedMessage.domain
       this.address = parsedMessage.address
@@ -136,6 +139,7 @@ export class SiweMessage {
       this.chainId = parsedMessage.chainId
       this.resources = parsedMessage.resources
     } else {
+      this.warnings = []
       this.scheme = param?.scheme
       this.domain = param.domain
       this.address = param.address
@@ -202,7 +206,8 @@ export class SiweMessage {
         )
       }
       /* the message object is valid or parsing its stringified value will throw */
-      new ParsedMessage(this.prepareMessage())
+      const roundTrip = new ParsedMessage(this.prepareMessage())
+      this.warnings = roundTrip.warnings
     }
   }
 

@@ -1,7 +1,11 @@
 import apgLib from 'apg-js/src/apg-lib/node-exports.js'
 const utils = apgLib.utils
 const id = apgLib.ids
-import { isEIP55Address, isValidISO8601Date, parseIntegerNumber } from './utils'
+import {
+  classifyAddressCase,
+  isValidISO8601Date,
+  parseIntegerNumber,
+} from './utils'
 
 export const cb = {
   signInWithEtherium: function (result, chars, phraseIndex, data) {
@@ -76,9 +80,14 @@ export const cb = {
           phraseIndex,
           result.phraseLength,
         )
-        if (!isEIP55Address(data.address)) {
+        const caseStatus = classifyAddressCase(data.address)
+        if (caseStatus === 'invalid-checksum') {
           data.errors.push(
-            `line ${data.lineno}: invalid EIP-55 address - ${data.address}`,
+            `line ${data.lineno}: invalid EIP-55 address checksum - ${data.address}`,
+          )
+        } else if (caseStatus === 'unchecksummed') {
+          data.warnings.push(
+            `line ${data.lineno}: address is not EIP-55 checksummed - ${data.address}`,
           )
         }
         break

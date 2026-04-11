@@ -47,9 +47,10 @@ re-title        = %s"Resources:"
 oscheme         = [ ALPHA *( ALPHA / DIGIT / %d43 / %d45-46 ) "://" ]
 domain          = authority-d
 address         = "0x" 40*40HEXDIG
-    ; Must also conform to captilization
+    ; When mixed-case, must conform to capitalization
     ; checksum encoding specified in EIP-55
-    ; where applicable (EOAs).
+    ; where applicable (EOAs). All-lowercase or
+    ; all-uppercase addresses are accepted with a warning.
 
 statement       = 1*( %d97-122 / %d65-90 / %d48-57 / %d32-33 / %d35-36 / %d38-59 / %d61 / %d63-64 / %d91 / %d93 / %d95 / %d126)
     ; The purpose is to exclude LF (line breaks).

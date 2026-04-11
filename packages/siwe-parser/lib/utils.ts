@@ -1,9 +1,23 @@
 import { keccak_256 } from '@noble/hashes/sha3'
 import { bytesToHex } from '@noble/hashes/utils'
+
+export type AddressCaseStatus =
+  | 'valid-checksum'
+  | 'unchecksummed'
+  | 'invalid-checksum'
+
+export const classifyAddressCase = (address: string): AddressCaseStatus => {
+  if (address.length !== 42) return 'invalid-checksum'
+  const body = address.slice(2)
+  if (body === body.toLowerCase() || body === body.toUpperCase())
+    return 'unchecksummed'
+  return isEIP55Address(address) ? 'valid-checksum' : 'invalid-checksum'
+}
+
 /**
  * This method is supposed to check if an address is conforming to EIP-55.
  * @param address Address to be checked if conforms with EIP-55.
- * @returns Either the return is or not in the EIP-55 format.
+ * @returns Either the return is or is not in the EIP-55 format.
  */
 export const isEIP55Address = (address: string) => {
   if (address.length !== 42) {

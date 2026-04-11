@@ -181,6 +181,53 @@ describe(`EIP1271`, () => {
   )
 })
 
+describe('Address warnings', () => {
+  test('SiweMessage from string with all-lowercase address has warnings', () => {
+    const msg = new SiweMessage(
+      'service.org wants you to sign in with your Ethereum account:\n0xe5a12547fe4e872d192e3ececb76f2ce1aea4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z',
+    )
+    expect(msg.warnings).toHaveLength(1)
+    expect(msg.address).toBe('0xe5a12547fe4e872d192e3ececb76f2ce1aea4946')
+  })
+
+  test('SiweMessage from object with all-lowercase address has warnings', () => {
+    const msg = new SiweMessage({
+      domain: 'service.org',
+      address: '0xe5a12547fe4e872d192e3ececb76f2ce1aea4946',
+      statement: 'Test',
+      uri: 'https://service.org/login',
+      version: '1',
+      chainId: 1,
+      nonce: '12341234',
+      issuedAt: '2022-03-17T12:45:13.610Z',
+    })
+    expect(msg.warnings).toHaveLength(1)
+  })
+
+  test('SiweMessage with checksummed address has no warnings', () => {
+    const msg = new SiweMessage({
+      domain: 'service.org',
+      address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      statement: 'Test',
+      uri: 'https://service.org/login',
+      version: '1',
+      chainId: 1,
+      nonce: '32891757',
+      issuedAt: '2021-09-30T16:25:24.000Z',
+    })
+    expect(msg.warnings).toEqual([])
+  })
+
+  test('SiweMessage with mixed-case wrong checksum still throws', () => {
+    expect(
+      () =>
+        new SiweMessage(
+          'service.org wants you to sign in with your Ethereum account:\n0xe5a12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z',
+        ),
+    ).toThrow()
+  })
+})
+
 describe(`Unit`, () => {
   test('Should throw if validateMessage is called with arguments', () =>
     expect(() => {
