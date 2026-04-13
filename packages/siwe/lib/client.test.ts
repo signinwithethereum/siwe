@@ -192,7 +192,8 @@ describe('Address case handling', () => {
 
   const baseFields = {
     domain: 'service.org',
-    statement: 'I accept the ServiceOrg Terms of Service: https://service.org/tos',
+    statement:
+      'I accept the ServiceOrg Terms of Service: https://service.org/tos',
     uri: 'https://service.org/login',
     version: '1',
     chainId: 1,
