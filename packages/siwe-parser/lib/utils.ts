@@ -15,19 +15,13 @@ export const classifyAddressCase = (address: string): AddressCaseStatus => {
 }
 
 /**
- * This method is supposed to check if an address is conforming to EIP-55.
- * @param address Address to be checked if conforms with EIP-55.
- * @returns Either the return is or is not in the EIP-55 format.
+ * Encode an address with the EIP-55 mixed-case checksum.
+ * Accepts any-case hex input; returns the canonical checksummed form.
  */
-export const isEIP55Address = (address: string) => {
-  if (address.length !== 42) {
-    return false
-  }
-
+export const toChecksumAddress = (address: string): string => {
   const lowerAddress = `${address}`.toLowerCase().replace('0x', '')
   const hash = bytesToHex(keccak_256(lowerAddress))
   let ret = '0x'
-
   for (let i = 0; i < lowerAddress.length; i++) {
     if (parseInt(hash[i], 16) >= 8) {
       ret += lowerAddress[i].toUpperCase()
@@ -35,7 +29,19 @@ export const isEIP55Address = (address: string) => {
       ret += lowerAddress[i]
     }
   }
-  return address === ret
+  return ret
+}
+
+/**
+ * Check whether an address matches its EIP-55 checksum.
+ * @param address Address to be checked if conforms with EIP-55.
+ * @returns Whether the address is in EIP-55 checksummed form.
+ */
+export const isEIP55Address = (address: string) => {
+  if (address.length !== 42) {
+    return false
+  }
+  return address === toChecksumAddress(address)
 }
 
 export const parseIntegerNumber = (number: string): number => {

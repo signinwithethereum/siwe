@@ -181,50 +181,122 @@ describe(`EIP1271`, () => {
   )
 })
 
-describe('Address warnings', () => {
-  test('SiweMessage from string with all-lowercase address has warnings', () => {
-    const msg = new SiweMessage(
-      'service.org wants you to sign in with your Ethereum account:\n0xe5a12547fe4e872d192e3ececb76f2ce1aea4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z',
+describe('Address case handling', () => {
+  const CHECKSUMMED = '0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946'
+  const LOWERCASE = '0xe5a12547fe4e872d192e3ececb76f2ce1aea4946'
+  const UPPERCASE = '0xE5A12547FE4E872D192E3ECECB76F2CE1AEA4946'
+  const WRONG_MIXED = '0xe5a12547fe4E872D192E3eCecb76F2Ce1aeA4946'
+
+  const buildString = (address: string) =>
+    `service.org wants you to sign in with your Ethereum account:\n${address}\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z`
+
+  const baseFields = {
+    domain: 'service.org',
+    statement: 'I accept the ServiceOrg Terms of Service: https://service.org/tos',
+    uri: 'https://service.org/login',
+    version: '1',
+    chainId: 1,
+    nonce: '12341234',
+    issuedAt: '2022-03-17T12:45:13.610Z',
+  }
+
+  describe('construction from string (address preserved verbatim)', () => {
+    test('checksummed → no warnings', () => {
+      const msg = new SiweMessage(buildString(CHECKSUMMED))
+      expect(msg.warnings).toEqual([])
+      expect(msg.address).toBe(CHECKSUMMED)
+    })
+
+    test('all-lowercase → 1 warning, preserved', () => {
+      const msg = new SiweMessage(buildString(LOWERCASE))
+      expect(msg.warnings).toHaveLength(1)
+      expect(msg.address).toBe(LOWERCASE)
+    })
+
+    test('all-uppercase → 1 warning, preserved', () => {
+      const msg = new SiweMessage(buildString(UPPERCASE))
+      expect(msg.warnings).toHaveLength(1)
+      expect(msg.address).toBe(UPPERCASE)
+    })
+
+    test('mixed-case wrong checksum → throws', () => {
+      expect(() => new SiweMessage(buildString(WRONG_MIXED))).toThrow(
+        'invalid EIP-55 address',
+      )
+    })
+  })
+
+  describe('construction from object (normalized to EIP-55)', () => {
+    test('checksummed → no warnings, preserved', () => {
+      const msg = new SiweMessage({ ...baseFields, address: CHECKSUMMED })
+      expect(msg.warnings).toEqual([])
+      expect(msg.address).toBe(CHECKSUMMED)
+    })
+
+    test('all-lowercase → 1 warning, normalized to checksummed', () => {
+      const msg = new SiweMessage({ ...baseFields, address: LOWERCASE })
+      expect(msg.warnings).toHaveLength(1)
+      expect(msg.address).toBe(CHECKSUMMED)
+    })
+
+    test('all-uppercase → 1 warning, normalized to checksummed', () => {
+      const msg = new SiweMessage({ ...baseFields, address: UPPERCASE })
+      expect(msg.warnings).toHaveLength(1)
+      expect(msg.address).toBe(CHECKSUMMED)
+    })
+
+    test('mixed-case wrong checksum → throws', () => {
+      expect(
+        () => new SiweMessage({ ...baseFields, address: WRONG_MIXED }),
+      ).toThrow('invalid EIP-55 address')
+    })
+  })
+
+  describe('verification round-trip across address casings', () => {
+    const transforms: Array<[string, (addr: string) => string]> = [
+      ['checksummed', (a) => a],
+      ['all-lowercase', (a) => a.toLowerCase()],
+      ['all-uppercase', (a) => '0x' + a.slice(2).toUpperCase()],
+    ]
+
+    test.each(transforms)(
+      'string path: wallet signs %s address → parse + verify succeeds',
+      async (_, transform) => {
+        const wallet = Wallet.createRandom()
+        const address = transform(wallet.address)
+        const signedString = buildString(address)
+        const signature = await wallet.signMessage(signedString)
+
+        const parsed = new SiweMessage(signedString)
+        expect(parsed.address).toBe(address)
+
+        const { success } = await parsed.verify({
+          signature,
+          domain: parsed.domain,
+          nonce: parsed.nonce,
+        })
+        expect(success).toBe(true)
+      },
     )
-    expect(msg.warnings).toHaveLength(1)
-    expect(msg.address).toBe('0xe5a12547fe4e872d192e3ececb76f2ce1aea4946')
-  })
 
-  test('SiweMessage from object with all-lowercase address has warnings', () => {
-    const msg = new SiweMessage({
-      domain: 'service.org',
-      address: '0xe5a12547fe4e872d192e3ececb76f2ce1aea4946',
-      statement: 'Test',
-      uri: 'https://service.org/login',
-      version: '1',
-      chainId: 1,
-      nonce: '12341234',
-      issuedAt: '2022-03-17T12:45:13.610Z',
-    })
-    expect(msg.warnings).toHaveLength(1)
-  })
+    test.each(transforms)(
+      'object path: construct with %s address → sign toMessage() → verify succeeds',
+      async (_, transform) => {
+        const wallet = Wallet.createRandom()
+        const msg = new SiweMessage({
+          ...baseFields,
+          address: transform(wallet.address),
+        })
+        const signature = await wallet.signMessage(msg.toMessage())
 
-  test('SiweMessage with checksummed address has no warnings', () => {
-    const msg = new SiweMessage({
-      domain: 'service.org',
-      address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-      statement: 'Test',
-      uri: 'https://service.org/login',
-      version: '1',
-      chainId: 1,
-      nonce: '32891757',
-      issuedAt: '2021-09-30T16:25:24.000Z',
-    })
-    expect(msg.warnings).toEqual([])
-  })
-
-  test('SiweMessage with mixed-case wrong checksum still throws', () => {
-    expect(
-      () =>
-        new SiweMessage(
-          'service.org wants you to sign in with your Ethereum account:\n0xe5a12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z',
-        ),
-    ).toThrow()
+        const { success } = await msg.verify({
+          signature,
+          domain: msg.domain,
+          nonce: msg.nonce,
+        })
+        expect(success).toBe(true)
+      },
+    )
   })
 })
 

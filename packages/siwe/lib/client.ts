@@ -1,6 +1,8 @@
 import {
   ParsedMessage,
+  classifyAddressCase,
   parseIntegerNumber,
+  toChecksumAddress,
 } from '@signinwithethereum/siwe-parser'
 
 import type { SiweConfig } from './config'
@@ -170,6 +172,15 @@ export class SiweMessage {
           String(this.address),
         )
       }
+      /* Normalize all-lowercase / all-uppercase inputs to EIP-55 so generated
+       * messages are spec-compliant. Mixed-case with a wrong checksum is left
+       * alone and rejected by the roundtrip parse below. */
+      if (classifyAddressCase(this.address) === 'unchecksummed') {
+        this.warnings.push(
+          `address is not EIP-55 checksummed - ${this.address}`,
+        )
+        this.address = toChecksumAddress(this.address)
+      }
       if (!this.uri) {
         throw new SiweError(
           SiweErrorType.INVALID_URI,
@@ -207,7 +218,7 @@ export class SiweMessage {
       }
       /* the message object is valid or parsing its stringified value will throw */
       const roundTrip = new ParsedMessage(this.prepareMessage())
-      this.warnings = roundTrip.warnings
+      this.warnings = [...this.warnings, ...roundTrip.warnings]
     }
   }
 
@@ -524,8 +535,9 @@ export class SiweMessage {
       // verifyMessage throws on malformed signatures — fall through to INVALID_SIGNATURE
     }
 
-    /** Match signature with message's address */
-    if (addr === this.address) {
+    /** Match signature with message's address (case-insensitive: the message
+     * may carry an unchecksummed address, while recovery returns checksummed) */
+    if (addr && addr.toLowerCase() === this.address.toLowerCase()) {
       return { success: true, data: this }
     }
 
