@@ -218,7 +218,7 @@ export class SiweMessage {
       }
       /* the message object is valid or parsing its stringified value will throw */
       const roundTrip = new ParsedMessage(this.prepareMessage())
-      this.warnings = [...this.warnings, ...roundTrip.warnings]
+      this.warnings.push(...roundTrip.warnings)
     }
   }
 
