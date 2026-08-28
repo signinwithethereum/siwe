@@ -1,4 +1,6 @@
-![Sign in with Ethereum logo](https://raw.githubusercontent.com/signinwithethereum/siwe/main/assets/og.png 'Sign in with Ethereum')
+<img width="9800" height="5400" alt="siwe-banner-simple" src="https://github.com/user-attachments/assets/ab4fbb91-0c25-43e0-8b88-a73aefad46e3" />
+
+# Sign in with Ethereum
 
 Sign in with Ethereum (SIWE) describes how Ethereum accounts authenticate with
 off-chain services by signing a standard message format parameterized by scope,
