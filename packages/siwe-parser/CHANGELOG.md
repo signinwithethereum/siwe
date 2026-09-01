@@ -1,5 +1,19 @@
 # @signinwithethereum/siwe-parser
 
+## 4.2.1
+
+### Patch Changes
+
+- [#15](https://github.com/signinwithethereum/siwe/pull/15) [`48edf15`](https://github.com/signinwithethereum/siwe/commit/48edf15122a2a831c2272840164c17a594513829) Thanks [@caveman-eth](https://github.com/caveman-eth)! - Ship `.d.mts` and `.d.cts` declarations so CJS TypeScript consumers resolve types correctly under Node16
+
+  Both packages set `"type": "module"` and publish dual `.mjs`/`.cjs` builds, but shipped a single `.d.ts` that both the `import` and `require` export conditions pointed at. Under `moduleResolution: "Node16"`, TypeScript reads that lone declaration as ESM-only, so any consumer emitting `require()` calls failed with TS1479 even though the runtime `require()` of the `.cjs` build worked fine.
+
+  Each export condition now points at a declaration whose module format matches the JavaScript it describes. No runtime or API changes.
+
+- [#18](https://github.com/signinwithethereum/siwe/pull/18) [`ce5ea22`](https://github.com/signinwithethereum/siwe/commit/ce5ea22fc0e6330b07e6bfd512d94742fe058fb4) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Type `isUri` as returning `boolean` instead of `any`
+
+  The return type was inferred as `any` because the result flows through the untyped `apg-js` parser. The parser's `parse()` always sets `success` to a literal `true` or `false`, so the declaration now states `boolean` explicitly. No runtime changes.
+
 ## 4.2.0
 
 ### Minor Changes

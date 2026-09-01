@@ -1,5 +1,22 @@
 # @signinwithethereum/siwe
 
+## 4.2.1
+
+### Patch Changes
+
+- [#15](https://github.com/signinwithethereum/siwe/pull/15) [`48edf15`](https://github.com/signinwithethereum/siwe/commit/48edf15122a2a831c2272840164c17a594513829) Thanks [@caveman-eth](https://github.com/caveman-eth)! - Ship `.d.mts` and `.d.cts` declarations so CJS TypeScript consumers resolve types correctly under Node16
+
+  Both packages set `"type": "module"` and publish dual `.mjs`/`.cjs` builds, but shipped a single `.d.ts` that both the `import` and `require` export conditions pointed at. Under `moduleResolution: "Node16"`, TypeScript reads that lone declaration as ESM-only, so any consumer emitting `require()` calls failed with TS1479 even though the runtime `require()` of the `.cjs` build worked fine.
+
+  Each export condition now points at a declaration whose module format matches the JavaScript it describes. No runtime or API changes.
+
+- [#17](https://github.com/signinwithethereum/siwe/pull/17) [`e5c471f`](https://github.com/signinwithethereum/siwe/commit/e5c471fc15a80989becedc41b077cedcda061a2b) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Correct the package name in JSDoc usage examples
+
+  The `@example` blocks on `configure` and `createViemConfig` imported from `@signinwithethereum/ts`, which does not exist; they now import from `@signinwithethereum/siwe`. The ethers example on `configure` also gained the missing `await` on `createEthersConfig`. These examples appear in editor hover documentation via the published declarations. No runtime or API changes.
+
+- Updated dependencies [[`48edf15`](https://github.com/signinwithethereum/siwe/commit/48edf15122a2a831c2272840164c17a594513829), [`ce5ea22`](https://github.com/signinwithethereum/siwe/commit/ce5ea22fc0e6330b07e6bfd512d94742fe058fb4)]:
+  - @signinwithethereum/siwe-parser@4.2.1
+
 ## 4.2.0
 
 ### Minor Changes
