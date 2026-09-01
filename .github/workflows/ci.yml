@@ -41,6 +41,9 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      - name: Check published types
+        run: pnpm check:exports
+
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest

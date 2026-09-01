@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r run build",
+    "check:exports": "pnpm -r exec attw --pack .",
     "format": "prettier --write 'packages/**/*.{ts,tsx,js,jsx,vue,json,css,scss,html}'",
     "format:check": "prettier --check 'packages/**/*.{ts,tsx,js,jsx,vue,json,css,scss,html}'",
     "test": "pnpm -r run test",
@@ -15,6 +16,7 @@
   "author": "Ethereum Identity Foundation",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
     "@types/node": "^25.5.0",

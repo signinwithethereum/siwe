@@ -9,11 +9,11 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/parsers.d.ts",
+        "types": "./dist/parsers.d.mts",
         "default": "./dist/parsers.mjs"
       },
       "require": {
-        "types": "./dist/parsers.d.ts",
+        "types": "./dist/parsers.d.cts",
         "default": "./dist/parsers.cjs"
       }
     }

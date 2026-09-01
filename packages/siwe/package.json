@@ -9,11 +9,11 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/siwe.d.ts",
+        "types": "./dist/siwe.d.mts",
         "default": "./dist/siwe.mjs"
       },
       "require": {
-        "types": "./dist/siwe.d.ts",
+        "types": "./dist/siwe.d.cts",
         "default": "./dist/siwe.cjs"
       }
     }
