@@ -39,7 +39,7 @@ export interface ViemConfigOpts {
  *
  * @example
  * ```ts
- * import { createViemConfig, configure } from '@signinwithethereum/ts';
+ * import { createViemConfig, configure } from '@signinwithethereum/siwe';
  * import { createPublicClient, http } from 'viem';
  * import { mainnet } from 'viem/chains';
  *
