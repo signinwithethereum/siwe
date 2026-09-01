@@ -151,7 +151,7 @@ export class ParsedMessage {
   }
 }
 
-export const isUri = (uri: string) => {
+export const isUri = (uri: string): boolean => {
   const parser = new apgLib.parser()
   // Use a null-prototype object to prevent prototype pollution.
   parser.callbacks = Object.create(null)
