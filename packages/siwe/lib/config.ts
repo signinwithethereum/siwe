@@ -44,11 +44,11 @@ let globalConfig: SiweConfig | null = null
  * @example
  * ```ts
  * // With ethers
- * import { configure, createEthersConfig } from '@signinwithethereum/ts';
- * configure(createEthersConfig(provider));
+ * import { configure, createEthersConfig } from '@signinwithethereum/siwe';
+ * configure(await createEthersConfig(provider));
  *
  * // With viem
- * import { configure, createViemConfig } from '@signinwithethereum/ts';
+ * import { configure, createViemConfig } from '@signinwithethereum/siwe';
  * configure(await createViemConfig({ publicClient }));
  * ```
  */
