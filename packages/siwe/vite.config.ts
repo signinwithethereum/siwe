@@ -1,5 +1,6 @@
-import { copyFile } from 'node:fs/promises'
+import { copyFile, readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import dts from 'vite-plugin-dts'
 
@@ -10,13 +11,23 @@ import dts from 'vite-plugin-dts'
  * declaration whose module format matches the JS it describes.
  */
 const emitDualDeclarations = async () => {
-  const dist = resolve(process.cwd(), 'dist')
-  const source = resolve(dist, 'siwe.d.ts')
+  const dist = fileURLToPath(new URL('dist', import.meta.url))
+  const declarations = (await readdir(dist)).filter((f) => f.endsWith('.d.ts'))
 
-  await Promise.all([
-    copyFile(source, resolve(dist, 'siwe.d.mts')),
-    copyFile(source, resolve(dist, 'siwe.d.cts')),
-  ])
+  if (declarations.length === 0) {
+    throw new Error(`no .d.ts emitted in ${dist} to copy to .d.mts/.d.cts`)
+  }
+
+  await Promise.all(
+    declarations.flatMap((name) =>
+      ['.d.mts', '.d.cts'].map((extension) =>
+        copyFile(
+          resolve(dist, name),
+          resolve(dist, name.replace(/\.d\.ts$/, extension)),
+        ),
+      ),
+    ),
+  )
 }
 
 export default defineConfig({
